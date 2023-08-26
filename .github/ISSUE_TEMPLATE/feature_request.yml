@@ -1,0 +1,26 @@
+name: Request a feature
+description: Let us know if you have ideas for issues you would like to see supported by the provider.
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for taking the time to fill out this feature request! We encourage you to start with a [GitHub discussion](https://github.com/SaladTechnologies/virtual-kubelet-saladcloud/discussions) to ensure this issue fits in the roadmap. If this issue is security related, please disclose vulnerabilities to us responsibly as a [GitHub security advisory](https://github.com/SaladTechnologies/virtual-kubelet-saladcloud/security/advisories/new).
+  - type: textarea
+    id: feature
+    attributes:
+      label: What do you want?
+      description: Please provide as much information about the issue as possible.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Why is it needed?
+      description: Please provide as much information about the issue as possible.
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else we should know?

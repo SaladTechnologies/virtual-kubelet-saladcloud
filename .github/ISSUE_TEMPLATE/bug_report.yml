@@ -1,0 +1,47 @@
+name: Report a bug
+description: Let us know if you encountered an issue using the provider.
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for taking the time to fill out this bug report! We encourage you to start with a [GitHub discussion](https://github.com/SaladTechnologies/virtual-kubelet-saladcloud/discussions) to ensure this issue is new. If this issue is security related, please disclose vulnerabilities to us responsibly as a [GitHub security advisory](https://github.com/SaladTechnologies/virtual-kubelet-saladcloud/security/advisories/new).
+  - type: textarea
+    id: actual
+    attributes:
+      label: What actually happened?
+      description: Please provide as much information about the issue as possible.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect to happen?
+      description: Please provide as much information about the issue as possible.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: How can we reproduce it?
+      description: Please provide as succinct a reproduction as possible.
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else we should know?
+  - type: textarea
+    id: providerVersion
+    attributes:
+      label: What is the version of your SaladCloud Virtual Kubelet Provider?
+      description: e.g. 1.0.1
+    validations:
+      required: true
+  - type: textarea
+    id: kubernetesVersion
+    attributes:
+      label: What is the version of your Kubernetes cluster?
+      description: e.g. 1.28.0
+    validations:
+      required: true

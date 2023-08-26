@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Docker BuildKit
+        uses: docker/setup-buildx-action@v2
+      - name: Collect metadata
+        id: metadata
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            saladtechnologies/virtual-kubelet-saladcloud
+          labels: |
+            org.opencontainers.image.title=SaladCloud Virtual Kubelet Provider
+            org.opencontainers.image.description=Enables running Kubernetes pods remotely on SaladCloud
+            org.opencontainers.image.vendor=Salad Technologies
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,format=long
+      - name: Build container image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./docker/Dockerfile
+          labels: ${{ steps.metadata.outputs.labels }}
+          platforms: linux/amd64
+          pull: true
+          push: false
+          tags: ${{ steps.metadata.outputs.tags }}

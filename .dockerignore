@@ -1,0 +1,9 @@
+**/.gitignore
+**/*Dockerfile*
+.dockerignore
+.editorconfig
+.gitattributes
+.prettierrc.yaml
+LICENSE
+NOTICE
+README.md

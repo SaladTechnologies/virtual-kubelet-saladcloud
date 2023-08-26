@@ -1,0 +1,52 @@
+*                       text=auto
+*.bat                   text eol=crlf
+*.cmd                   text eol=crlf
+*.Dockerfile            text
+*.gif                   binary
+*.go                    text diff=golang
+*.jpg                   binary
+*.json                  text
+*.md                    text
+*.png                   binary
+*.proto                 text
+*.ps1                   text eol=lf
+*.sh                    text eol=lf
+*.svg                   text
+*.svgz                  binary
+*.txt                   text
+*.webm                  binary
+*.webp                  binary
+*.xml                   text
+*.xslt                  text
+*.yaml                  text
+*.yml                   text
+.dockerignore           text
+.editorconfig           text
+.gitattributes          text
+.gitconfig              text
+.gitignore              text
+.helmignore             text
+ACKNOWLEDGMENTS*        text
+AUTHORS*                text
+CHANGELOG*              text
+CHANGES*                text
+CODE_OF_CONDUCT*        text
+CODEOWNERS*             text
+CONTRIBUTING*           text
+CONTRIBUTORS*           text
+COPYING*                text
+COPYRIGHT*              text
+Dockerfile*             text
+HISTORY*                text
+INSTALL*                text
+ISSUE_TEMPLATE*         text
+LICENSE*                text
+Makefile                text
+makefile                text
+NEWS*                   text
+NOTICE*                 text
+PULL_REQUEST_TEMPLATE*  text
+README*                 text
+RELEASES*               text
+SUPPORT*                text
+TODO*                   text

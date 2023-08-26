@@ -1,0 +1,40 @@
+name: Stale
+
+on:
+  schedule:
+    - cron: "0 * * * *"
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 30 days stale policy
+        uses: actions/stale@v8
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          days-before-stale: 30
+          days-before-close: 7
+          operations-per-run: 25
+          remove-stale-when-updated: true
+          stale-issue-label: "stale"
+          exempt-issue-labels: "no-stale,help%20wanted,good%20first%20issue"
+          stale-issue-message: >
+            There hasn't been activity on this issue in 30 days.
+
+            This issue has been marked stale and will be closed in 7 days if no further activity occurs.
+
+            Issues with the labels `no-stale`, `help wanted`, and `good first issue` are exempt from this policy.
+
+          stale-pr-label: "stale"
+          exempt-pr-labels: "no-stale"
+          stale-pr-message: >
+            There hasn't been any activity on this pull request in 30 days.
+
+            This pull request has been marked stale and will be closed in 7 days if no further activity occurs.
+
+            Pull requests with the label `no-stale` are exempt from this policy.
