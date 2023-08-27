@@ -21,6 +21,6 @@ jobs:
         with:
           version: v1.54
       - name: hadolint
-        uses: hadolint/hadolint-action@v3
+        uses: hadolint/hadolint-action@v3.1.0
         with:
           dockerfile: ./docker/Dockerfile
