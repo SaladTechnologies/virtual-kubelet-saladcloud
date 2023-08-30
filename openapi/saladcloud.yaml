@@ -1,0 +1,2529 @@
+openapi: "3.0.3"
+
+info:
+  title: SaladCloud Public API
+  description: The SaladCloud Public API.
+  contact:
+    name: Salad Support
+    url: https://support.salad.com
+    email: support@salad.com
+  termsOfService: https://salad.com/terms
+  version: "1.0.0-alpha.56"
+
+servers:
+  - url: https://api.salad.com/api/public
+
+security:
+  - ApiKeyAuth: []
+
+paths:
+  # Salad Container Engine
+  /organizations/{organization_name}/projects/{project_name}/containers:
+    summary: Container Groups
+    description: Operations for container groups
+    parameters:
+      - $ref: "#/components/parameters/organization_name"
+      - $ref: "#/components/parameters/project_name"
+    get:
+      summary: List Container Groups
+      description: Gets the list of container groups
+      operationId: list_container_groups
+      responses:
+        "200":
+          $ref: "#/components/responses/ListContainerGroups"
+        "429":
+          $ref: "#/components/responses/429"
+        default:
+          $ref: "#/components/responses/UnknownError"
+      tags:
+        - container_groups
+    post:
+      summary: Create a Container Group
+      description: Creates a new container group
+      operationId: create_container_group
+      requestBody:
+        $ref: "#/components/requestBodies/CreateContainerGroup"
+      responses:
+        "201":
+          $ref: "#/components/responses/CreateContainerGroup"
+        "400":
+          $ref: "#/components/responses/400"
+        "403":
+          $ref: "#/components/responses/403"
+        "429":
+          $ref: "#/components/responses/429"
+        default:
+          $ref: "#/components/responses/UnknownError"
+      tags:
+        - container_groups
+  /organizations/{organization_name}/projects/{project_name}/containers/{container_group_name}:
+    summary: Container Group
+    description: Operations for a container group
+    parameters:
+      - $ref: "#/components/parameters/organization_name"
+      - $ref: "#/components/parameters/project_name"
+      - $ref: "#/components/parameters/container_group_name"
+    get:
+      summary: Get a Container Group
+      description: Gets a container group
+      operationId: get_container_group
+      responses:
+        "200":
+          $ref: "#/components/responses/GetContainerGroup"
+        "404":
+          $ref: "#/components/responses/404"
+        "429":
+          $ref: "#/components/responses/429"
+        default:
+          $ref: "#/components/responses/UnknownError"
+      tags:
+        - container_groups
+    patch:
+      summary: Update a Container Group
+      description: Updates a container group
+      operationId: update_container_group
+      requestBody:
+        $ref: "#/components/requestBodies/UpdateContainerGroup"
+      responses:
+        "200":
+          $ref: "#/components/responses/UpdateContainerGroup"
+        "400":
+          $ref: "#/components/responses/400"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+        "429":
+          $ref: "#/components/responses/429"
+        default:
+          $ref: "#/components/responses/UnknownError"
+      tags:
+        - container_groups
+    delete:
+      summary: Delete a Container Group
+      description: Deletes a container group
+      operationId: delete_container_group
+      responses:
+        "202":
+          $ref: "#/components/responses/DeleteContainerGroup"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+        "429":
+          $ref: "#/components/responses/429"
+        default:
+          $ref: "#/components/responses/UnknownError"
+      tags:
+        - container_groups
+  /organizations/{organization_name}/projects/{project_name}/containers/{container_group_name}/start:
+    summary: Container Group
+    description: Operations for a container group
+    parameters:
+      - $ref: "#/components/parameters/organization_name"
+      - $ref: "#/components/parameters/project_name"
+      - $ref: "#/components/parameters/container_group_name"
+    post:
+      summary: Start a Container Group
+      description: Starts a container group
+      operationId: start_container_group
+      responses:
+        "202":
+          $ref: "#/components/responses/StartContainerGroup"
+        "400":
+          $ref: "#/components/responses/400"
+        "403":
+          $ref: "#/components/responses/403"
+        "429":
+          $ref: "#/components/responses/429"
+        default:
+          $ref: "#/components/responses/UnknownError"
+      tags:
+        - container_groups
+  /organizations/{organization_name}/projects/{project_name}/containers/{container_group_name}/restart:
+    summary: Container Group
+    description: Operations for a container group
+    parameters:
+      - $ref: "#/components/parameters/organization_name"
+      - $ref: "#/components/parameters/project_name"
+      - $ref: "#/components/parameters/container_group_name"
+    post:
+      summary: Restart a Container Group
+      description: Restarts a container group
+      operationId: restart_container_group
+      responses:
+        "202":
+          $ref: "#/components/responses/RestartContainerGroup"
+        "400":
+          $ref: "#/components/responses/400"
+        "403":
+          $ref: "#/components/responses/403"
+        "429":
+          $ref: "#/components/responses/429"
+        default:
+          $ref: "#/components/responses/UnknownError"
+      tags:
+        - container_groups
+  /organizations/{organization_name}/projects/{project_name}/containers/{container_group_name}/stop:
+    summary: Container Group
+    description: Operations for a container group
+    parameters:
+      - $ref: "#/components/parameters/organization_name"
+      - $ref: "#/components/parameters/project_name"
+      - $ref: "#/components/parameters/container_group_name"
+    post:
+      summary: Stop a Container Group
+      description: Stops a container group
+      operationId: stop_container_group
+      responses:
+        "202":
+          $ref: "#/components/responses/StopContainerGroup"
+        "400":
+          $ref: "#/components/responses/400"
+        "403":
+          $ref: "#/components/responses/403"
+        "429":
+          $ref: "#/components/responses/429"
+        default:
+          $ref: "#/components/responses/UnknownError"
+      tags:
+        - container_groups
+  /organizations/{organization_name}/projects/{project_name}/containers/{container_group_name}/instances:
+    summary: Container Group
+    description: Operations for a container group
+    parameters:
+      - $ref: "#/components/parameters/organization_name"
+      - $ref: "#/components/parameters/project_name"
+      - $ref: "#/components/parameters/container_group_name"
+    get:
+      summary: List Container Group Instances
+      description: Retrieves a list of container group instances
+      operationId: list_container_group_instances
+      responses:
+        "200":
+          $ref: "#/components/responses/ListContainerGroupInstances"
+        "404":
+          $ref: "#/components/responses/404"
+        "429":
+          $ref: "#/components/responses/429"
+        default:
+          $ref: "#/components/responses/UnknownError"
+      tags:
+        - container_groups
+  /organizations/{organization_name}/projects/{project_name}/containers/{container_group_name}/instances/{machine_id}/reallocate:
+    summary: Container Group
+    description: Operations for a container group
+    parameters:
+      - $ref: "#/components/parameters/organization_name"
+      - $ref: "#/components/parameters/project_name"
+      - $ref: "#/components/parameters/container_group_name"
+      - $ref: "#/components/parameters/machine_id"
+    post:
+      summary: Reallocate container group instance to another node
+      description: Remove a node from a workload and reallocate the workload to a different node
+      operationId: container_group_instance_reallocate
+      responses:
+        "202":
+          $ref: "#/components/responses/ReallocateContainerGroupInstance"
+        "404":
+          $ref: "#/components/responses/404"
+        "429":
+          $ref: "#/components/responses/429"
+        default:
+          $ref: "#/components/responses/UnknownError"
+      tags:
+        - container_groups
+  /organizations/{organization_name}/projects/{project_name}/containers/{container_group_name}/instances/{machine_id}/recreate:
+    summary: Container Group
+    description: Operations for a container group
+    parameters:
+      - $ref: "#/components/parameters/organization_name"
+      - $ref: "#/components/parameters/project_name"
+      - $ref: "#/components/parameters/container_group_name"
+      - $ref: "#/components/parameters/machine_id"
+    post:
+      summary: Recreate container on a node
+      description: Stops a container, destroys it, creates a new one without requiring the image to be downloaded again on a different node
+      operationId: container_group_instance_recreate
+      responses:
+        "202":
+          $ref: "#/components/responses/RecreateContainerGroupInstance"
+        "404":
+          $ref: "#/components/responses/404"
+        "429":
+          $ref: "#/components/responses/429"
+        default:
+          $ref: "#/components/responses/UnknownError"
+      tags:
+        - container_groups
+  /organizations/{organization_name}/projects/{project_name}/containers/{container_group_name}/instances/{machine_id}/restart:
+    summary: Container Group
+    description: Operations for a container group
+    parameters:
+      - $ref: "#/components/parameters/organization_name"
+      - $ref: "#/components/parameters/project_name"
+      - $ref: "#/components/parameters/container_group_name"
+      - $ref: "#/components/parameters/machine_id"
+    post:
+      summary: Restart container on a node
+      description: Restarts a workload on a node without reallocating it
+      operationId: container_group_instance_restart
+      responses:
+        "202":
+          $ref: "#/components/responses/RestartContainerGroupInstance"
+        "404":
+          $ref: "#/components/responses/404"
+        "429":
+          $ref: "#/components/responses/429"
+        default:
+          $ref: "#/components/responses/UnknownError"
+      tags:
+        - container_groups
+
+  # Quotas
+  /organizations/{organization_name}/quotas:
+    summary: Quotas
+    description: Operations for quotas
+    parameters:
+      - $ref: "#/components/parameters/organization_name"
+    get:
+      summary: Get Quotas
+      description: Gets the organization quotas
+      operationId: get_quotas
+      responses:
+        "200":
+          $ref: "#/components/responses/GetQuotas"
+        "404":
+          $ref: "#/components/responses/404"
+        "429":
+          $ref: "#/components/responses/429"
+        default:
+          $ref: "#/components/responses/UnknownError"
+      tags:
+        - quotas
+
+  # Recipe Deployments
+  /organizations/{organization_name}/projects/{project_name}/recipe-deployments:
+    summary: Recipe Deployments
+    description: Operations for recipe deployments
+    parameters:
+      - $ref: "#/components/parameters/organization_name"
+      - $ref: "#/components/parameters/project_name"
+    get:
+      summary: List Recipe Deployments
+      description: Gets the list of all recipe deployments
+      operationId: list_recipe_deployments
+      responses:
+        "200":
+          $ref: "#/components/responses/ListRecipeDeployments"
+        "404":
+          $ref: "#/components/responses/404"
+        "429":
+          $ref: "#/components/responses/429"
+        default:
+          $ref: "#/components/responses/UnknownError"
+      tags:
+        - recipe_deployments
+    post:
+      summary: Create a Recipe Deployment
+      description: Creates a new Recipe Deployment
+      operationId: create_recipe_deployment
+      requestBody:
+        $ref: "#/components/requestBodies/CreateRecipeDeployment"
+      responses:
+        "201":
+          $ref: "#/components/responses/CreateRecipeDeployment"
+        "400":
+          $ref: "#/components/responses/400"
+        "403":
+          $ref: "#/components/responses/403"
+        "429":
+          $ref: "#/components/responses/429"
+        default:
+          $ref: "#/components/responses/UnknownError"
+      tags:
+        - recipe_deployments
+  /organizations/{organization_name}/projects/{project_name}/recipe-deployments/{recipe_deployment_name}:
+    summary: Recipe Deployment
+    description: Operations for a recipe
+    parameters:
+      - $ref: "#/components/parameters/organization_name"
+      - $ref: "#/components/parameters/project_name"
+      - $ref: "#/components/parameters/recipe_deployment_name"
+    get:
+      summary: Get a Recipe Deployment
+      description: Gets a Recipe Deployment by its unique name
+      operationId: get_recipe_deployment
+      responses:
+        "200":
+          $ref: "#/components/responses/GetRecipeDeployment"
+        "404":
+          $ref: "#/components/responses/404"
+        "429":
+          $ref: "#/components/responses/429"
+        default:
+          $ref: "#/components/responses/UnknownError"
+      tags:
+        - recipe_deployments
+    patch:
+      summary: Update a Recipe Deployment
+      description: Updates a Recipe Deployment
+      operationId: update_recipe_deployment
+      requestBody:
+        $ref: "#/components/requestBodies/UpdateRecipeDeployment"
+      responses:
+        "200":
+          $ref: "#/components/responses/UpdateRecipeDeployment"
+        "400":
+          $ref: "#/components/responses/400"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+        "429":
+          $ref: "#/components/responses/429"
+        default:
+          $ref: "#/components/responses/UnknownError"
+      tags:
+        - recipe_deployments
+    delete:
+      summary: Delete a Recipe Deployment
+      description: Deletes a Recipe Deployment
+      operationId: delete_recipe_deployment
+      responses:
+        "202":
+          $ref: "#/components/responses/DeleteRecipeDeployment"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+        "429":
+          $ref: "#/components/responses/429"
+        default:
+          $ref: "#/components/responses/UnknownError"
+      tags:
+        - recipe_deployments
+  /organizations/{organization_name}/projects/{project_name}/recipe-deployments/{recipe_deployment_name}/start:
+    summary: Recipe Deployment
+    description: Operations for a recipe
+    parameters:
+      - $ref: "#/components/parameters/organization_name"
+      - $ref: "#/components/parameters/project_name"
+      - $ref: "#/components/parameters/recipe_deployment_name"
+    post:
+      summary: Start a Deployed Recipe
+      description: Starts a Deployed Recipe
+      operationId: start_deployed_recipe
+      responses:
+        "202":
+          $ref: "#/components/responses/StartRecipeDeployment"
+        "400":
+          $ref: "#/components/responses/400"
+        "403":
+          $ref: "#/components/responses/403"
+        "429":
+          $ref: "#/components/responses/429"
+        default:
+          $ref: "#/components/responses/UnknownError"
+      tags:
+        - recipe_deployments
+  /organizations/{organization_name}/projects/{project_name}/recipe-deployments/{recipe_deployment_name}/restart:
+    summary: Recipe Deployment
+    description: Operations for a recipe
+    parameters:
+      - $ref: "#/components/parameters/organization_name"
+      - $ref: "#/components/parameters/project_name"
+      - $ref: "#/components/parameters/recipe_deployment_name"
+    post:
+      summary: Restart a Deployed Recipe
+      description: Restarts a Deployed Recipe
+      operationId: restart_deployed_recipe
+      responses:
+        "202":
+          $ref: "#/components/responses/RestartRecipeDeployment"
+        "400":
+          $ref: "#/components/responses/400"
+        "403":
+          $ref: "#/components/responses/403"
+        "429":
+          $ref: "#/components/responses/429"
+        default:
+          $ref: "#/components/responses/UnknownError"
+      tags:
+        - recipe_deployments
+  /organizations/{organization_name}/projects/{project_name}/recipe-deployments/{recipe_deployment_name}/stop:
+    summary: Recipe Deployment
+    description: Operations for a recipe
+    parameters:
+      - $ref: "#/components/parameters/organization_name"
+      - $ref: "#/components/parameters/project_name"
+      - $ref: "#/components/parameters/recipe_deployment_name"
+    post:
+      summary: Stop a Deployed Recipe
+      description: Stops a Deployed Recipe
+      operationId: stop_deployed_recipe
+      responses:
+        "202":
+          $ref: "#/components/responses/StopRecipeDeployment"
+        "400":
+          $ref: "#/components/responses/400"
+        "403":
+          $ref: "#/components/responses/403"
+        "429":
+          $ref: "#/components/responses/429"
+        default:
+          $ref: "#/components/responses/UnknownError"
+      tags:
+        - recipe_deployments
+  /organizations/{organization_name}/projects/{project_name}/recipe-deployments/{recipe_deployment_name}/instances:
+    summary: Recipe Deployment
+    description: Operations for a recipe
+    parameters:
+      - $ref: "#/components/parameters/organization_name"
+      - $ref: "#/components/parameters/project_name"
+      - $ref: "#/components/parameters/recipe_deployment_name"
+    get:
+      summary: List Recipe Deployment Instances
+      description: Retrieves a list of recipe deployment instances
+      operationId: list_recipe_deployment_instances
+      responses:
+        "200":
+          $ref: "#/components/responses/ListRecipeDeploymentInstances"
+        "404":
+          $ref: "#/components/responses/404"
+        "429":
+          $ref: "#/components/responses/429"
+        default:
+          $ref: "#/components/responses/UnknownError"
+      tags:
+        - recipe_deployments
+
+  # Organization GPU Classes
+  /organizations/{organization_name}/gpu-classes:
+    summary: GPU Classes
+    description: Allows reading the GPU Classes collection available for the organization
+    parameters:
+      - $ref: "#/components/parameters/organization_name"
+    get:
+      summary: List the GPU Classes
+      description: List the GPU Classes
+      operationId: list_gpu_classes
+      responses:
+        "200":
+          $ref: "#/components/responses/ListGpuClasses"
+        "404":
+          $ref: "#/components/responses/404"
+        "429":
+          $ref: "#/components/responses/429"
+        default:
+          $ref: "#/components/responses/UnknownError"
+      tags:
+        - organization_data
+
+  # Organization's recipes
+  /organizations/{organization_name}/recipes:
+    summary: Recipes
+    description: Operations for recipes
+    parameters:
+      - $ref: "#/components/parameters/organization_name"
+    get:
+      summary: List Recipes
+      description: Gets the list of recipes
+      operationId: list_recipes
+      responses:
+        "200":
+          $ref: "#/components/responses/ListRecipes"
+        "404":
+          $ref: "#/components/responses/404"
+        "429":
+          $ref: "#/components/responses/429"
+        default:
+          $ref: "#/components/responses/UnknownError"
+      tags:
+        - recipes
+
+  /organizations/{organization_name}/recipes/{recipe_name}:
+    summary: Recipes
+    description: Operations for recipes
+    parameters:
+      - $ref: "#/components/parameters/organization_name"
+      - $ref: "#/components/parameters/recipe_name"
+    get:
+      summary: Get a Recipe
+      description: Gets a recipe
+      operationId: get_recipe
+      responses:
+        "200":
+          $ref: "#/components/responses/GetRecipe"
+        "404":
+          $ref: "#/components/responses/404"
+        "429":
+          $ref: "#/components/responses/429"
+        default:
+          $ref: "#/components/responses/UnknownError"
+      tags:
+        - recipes
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: Salad-Api-Key
+
+  parameters:
+    # Salad Container Engine
+    container_group_name:
+      in: path
+      name: container_group_name
+      description: The unique container group name
+      required: true
+      schema:
+        type: string
+        minLength: 2
+        maxLength: 63
+        pattern: "^[a-z][a-z0-9-]{0,61}[a-z0-9]$"
+
+    # Organizations
+    organization_name:
+      in: path
+      name: organization_name
+      description: The unique organization name
+      required: true
+      schema:
+        type: string
+        minLength: 2
+        maxLength: 63
+        pattern: "^[a-z][a-z0-9-]{0,61}[a-z0-9]$"
+
+    # Projects
+    project_name:
+      in: path
+      name: project_name
+      description: The unique project name
+      required: true
+      schema:
+        type: string
+        minLength: 2
+        maxLength: 63
+        pattern: "^[a-z][a-z0-9-]{0,61}[a-z0-9]$"
+
+    # Recipes
+    recipe_deployment_name:
+      in: path
+      name: recipe_deployment_name
+      description: The unique recipe deployment name
+      required: true
+      schema:
+        type: string
+        minLength: 2
+        maxLength: 63
+        pattern: "^[a-z][a-z0-9-]{0,62}[a-z0-9]$"
+
+    recipe_name:
+      in: path
+      name: recipe_name
+      description: The unique recipe name
+      required: true
+      schema:
+        type: string
+        minLength: 2
+        maxLength: 63
+        pattern: "^[a-z][a-z0-9-]{0,62}[a-z0-9]$"
+
+    # Instances
+    machine_id:
+      in: path
+      name: machine_id
+      description: The unique machine identifier
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+    # Standard Errors
+    ProblemDetails:
+      type: object
+      description: Represents a problem
+      additionalProperties: false
+      properties:
+        type:
+          type: string
+          nullable: true
+          default: "about:blank"
+          description: The URI reference that identifies the problem type
+        title:
+          type: string
+          nullable: true
+          description: A short, human-readable summary of the problem type
+        status:
+          type: integer
+          nullable: true
+          description: The HTTP status code generated by the origin server
+        detail:
+          type: string
+          nullable: true
+          description: A human-readable explanation specific to this occurrence of the problem
+        instance:
+          type: string
+          nullable: true
+          description: The URI reference that identifies the specific occurrence of the problem
+
+    # Salad Container Engine
+    CountryCode:
+      type: string
+      enum:
+        - af
+        - al
+        - dz
+        - as
+        - ad
+        - ao
+        - ai
+        - aq
+        - ag
+        - ar
+        - am
+        - aw
+        - au
+        - at
+        - az
+        - bs
+        - bh
+        - bd
+        - bb
+        - by
+        - be
+        - bz
+        - bj
+        - bm
+        - bt
+        - bo
+        - bq
+        - ba
+        - bw
+        - bv
+        - br
+        - io
+        - bn
+        - bg
+        - bf
+        - bi
+        - cv
+        - kh
+        - cm
+        - ca
+        - ky
+        - cf
+        - td
+        - cl
+        - cn
+        - cx
+        - cc
+        - co
+        - km
+        - cd
+        - cg
+        - ck
+        - cr
+        - hr
+        - cu
+        - cw
+        - cy
+        - cz
+        - ci
+        - dk
+        - dj
+        - dm
+        - do
+        - ec
+        - eg
+        - sv
+        - gq
+        - er
+        - ee
+        - sz
+        - et
+        - fk
+        - fo
+        - fj
+        - fi
+        - fr
+        - gf
+        - pf
+        - tf
+        - ga
+        - gm
+        - ge
+        - de
+        - gh
+        - gi
+        - gr
+        - gl
+        - gd
+        - gp
+        - gu
+        - gt
+        - gg
+        - gn
+        - gw
+        - gy
+        - ht
+        - hm
+        - va
+        - hn
+        - hk
+        - hu
+        - is
+        - in
+        - id
+        - ir
+        - iq
+        - ie
+        - im
+        - il
+        - it
+        - jm
+        - jp
+        - je
+        - jo
+        - kz
+        - ke
+        - ki
+        - kp
+        - kr
+        - kw
+        - kg
+        - la
+        - lv
+        - lb
+        - ls
+        - lr
+        - ly
+        - li
+        - lt
+        - lu
+        - mo
+        - mg
+        - mw
+        - my
+        - mv
+        - ml
+        - mt
+        - mh
+        - mq
+        - mr
+        - mu
+        - yt
+        - mx
+        - fm
+        - md
+        - mc
+        - mn
+        - me
+        - ms
+        - ma
+        - mz
+        - mm
+        - na
+        - nr
+        - np
+        - nl
+        - nc
+        - nz
+        - ni
+        - ne
+        - ng
+        - nu
+        - nf
+        - mp
+        - no
+        - om
+        - pk
+        - pw
+        - ps
+        - pa
+        - pg
+        - py
+        - pe
+        - ph
+        - pn
+        - pl
+        - pt
+        - pr
+        - qa
+        - mk
+        - ro
+        - ru
+        - rw
+        - re
+        - bl
+        - sh
+        - kn
+        - lc
+        - mf
+        - pm
+        - vc
+        - ws
+        - sm
+        - st
+        - sa
+        - sn
+        - rs
+        - sc
+        - sl
+        - sg
+        - sx
+        - sk
+        - si
+        - sb
+        - so
+        - za
+        - gs
+        - ss
+        - es
+        - lk
+        - sd
+        - sr
+        - sj
+        - se
+        - ch
+        - sy
+        - tw
+        - tj
+        - tz
+        - th
+        - tl
+        - tg
+        - tk
+        - to
+        - tt
+        - tn
+        - tr
+        - tm
+        - tc
+        - tv
+        - ug
+        - ua
+        - ae
+        - gb
+        - um
+        - us
+        - uy
+        - uz
+        - vu
+        - ve
+        - vn
+        - vg
+        - vi
+        - wf
+        - eh
+        - ye
+        - zm
+        - zw
+        - ax
+    ContainerGroupStatus:
+      type: string
+      enum:
+        - pending
+        - running
+        - stopped
+        - succeeded
+        - failed
+        - deploying
+    ContainerRestartPolicy:
+      type: string
+      enum:
+        - always
+        - on_failure
+        - never
+    ContainerNetworkingProtocol:
+      type: string
+      enum:
+        - http
+    ContainerGroup:
+      type: object
+      description: Represents a container group
+      additionalProperties: false
+      required:
+        - id
+        - name
+        - display_name
+        - container
+        - restart_policy
+        - replicas
+        - current_state
+        - create_time
+        - update_time
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 2
+          maxLength: 63
+          pattern: "^[a-z][a-z0-9-]{0,61}[a-z0-9]$"
+        display_name:
+          type: string
+          minLength: 2
+          maxLength: 63
+          pattern: "^[ ,-.0-9A-Za-z]+$"
+        container:
+          $ref: "#/components/schemas/Container"
+        restart_policy:
+          $ref: "#/components/schemas/ContainerRestartPolicy"
+        replicas:
+          type: integer
+          minimum: 1
+          maximum: 100
+        current_state:
+          $ref: "#/components/schemas/ContainerGroupState"
+        country_codes:
+          type: array
+          minItems: 1
+          #The ISO 3166-1 alpha-2 list is 249 currently. So 500 should be sufficient for 100 years or so.
+          maxItems: 500
+          items:
+            $ref: "#/components/schemas/CountryCode"
+        networking:
+          $ref: "#/components/schemas/ContainerGroupNetworking"
+        liveness_probe:
+          $ref: "#/components/schemas/ContainerGroupProbe"
+        readiness_probe:
+          $ref: "#/components/schemas/ContainerGroupProbe"
+        startup_probe:
+          $ref: "#/components/schemas/ContainerGroupProbe"
+        create_time:
+          type: string
+          format: date-time
+        update_time:
+          type: string
+          format: date-time
+    ContainerGroupList:
+      type: object
+      description: Represents a list of container groups
+      additionalProperties: false
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          minItems: 0
+          maxItems: 100
+          items:
+            $ref: "#/components/schemas/ContainerGroup"
+    CreateContainerGroup:
+      type: object
+      description: Represents a request to create a container group
+      additionalProperties: false
+      required:
+        - name
+        - container
+        - restart_policy
+        - replicas
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 63
+          pattern: "^[a-z][a-z0-9-]{0,61}[a-z0-9]$"
+        display_name:
+          type: string
+          nullable: true
+          minLength: 2
+          maxLength: 63
+          pattern: "^[ ,-.0-9A-Za-z]+$"
+        container:
+          $ref: "#/components/schemas/CreateContainer"
+        restart_policy:
+          $ref: "#/components/schemas/ContainerRestartPolicy"
+        replicas:
+          type: integer
+          minimum: 1
+          maximum: 250
+        country_codes:
+          type: array
+          minItems: 1
+          #The ISO 3166-1 alpha-2 list is 249 currently. So 500 should be sufficient for 100 years or so.
+          maxItems: 500
+          items:
+            $ref: "#/components/schemas/CountryCode"
+        networking:
+          $ref: "#/components/schemas/CreateContainerGroupNetworking"
+        liveness_probe:
+          $ref: "#/components/schemas/ContainerGroupProbe"
+        readiness_probe:
+          $ref: "#/components/schemas/ContainerGroupProbe"
+        startup_probe:
+          $ref: "#/components/schemas/ContainerGroupProbe"
+    UpdateContainerGroup:
+      type: object
+      description: Represents a request to update a container group
+      additionalProperties: false
+      properties:
+        display_name:
+          type: string
+          nullable: true
+          minLength: 2
+          maxLength: 63
+          pattern: "^[ ,-.0-9A-Za-z]+$"
+        replicas:
+          type: integer
+          nullable: true
+          minimum: 1
+          maximum: 250
+    ContainerGroupNetworking:
+      type: object
+      nullable: true
+      description: Represents container group networking parameters
+      additionalProperties: false
+      required:
+        - protocol
+        - port
+        - auth
+        - dns
+      properties:
+        protocol:
+          $ref: "#/components/schemas/ContainerNetworkingProtocol"
+        port:
+          type: integer
+          minimum: 1
+          maximum: 65535
+        auth:
+          type: boolean
+        dns:
+          type: string
+          format: url
+    CreateContainerGroupNetworking:
+      type: object
+      nullable: true
+      description: Represents container group networking parameters
+      additionalProperties: false
+      required:
+        - protocol
+        - port
+        - auth
+      properties:
+        protocol:
+          $ref: "#/components/schemas/ContainerNetworkingProtocol"
+        port:
+          type: integer
+          minimum: 1
+          maximum: 65535
+        auth:
+          type: boolean
+    ContainerGroupProbe:
+      type: object
+      nullable: true
+      description: Represents container group probe
+      additionalProperties: false
+      required:
+        - initial_delay_seconds
+        - period_seconds
+        - timeout_seconds
+        - success_threshold
+        - failure_threshold
+      properties:
+        http:
+          $ref: "#/components/schemas/ContainerGroupProbeHttp"
+        tcp:
+          $ref: "#/components/schemas/ContainerGroupProbeTcp"
+        grpc:
+          $ref: "#/components/schemas/ContainerGroupProbeGrpc"
+        exec:
+          $ref: "#/components/schemas/ContainerGroupProbeExec"
+        initial_delay_seconds:
+          type: integer
+          minimum: 1
+        period_seconds:
+          type: integer
+          minimum: 1
+        timeout_seconds:
+          type: integer
+          minimum: 1
+        success_threshold:
+          type: integer
+          minimum: 1
+        failure_threshold:
+          type: integer
+          minimum: 1
+    ContainerProbeHttpScheme:
+      type: string
+      enum:
+        - http
+    HttpHeaders:
+      type: array
+      items:
+        type: object
+        additionalProperties: false
+        required:
+          - name
+          - value
+        properties:
+          name:
+            type: string
+          value:
+            type: string
+    ContainerGroupProbeHttp:
+      type: object
+      additionalProperties: false
+      required:
+        - path
+        - port
+      properties:
+        path:
+          type: string
+        port:
+          type: integer
+          minimum: 0
+          maximum: 65536
+        scheme:
+          $ref: "#/components/schemas/ContainerProbeHttpScheme"
+        headers:
+          $ref: "#/components/schemas/HttpHeaders"
+    ContainerGroupProbeTcp:
+      type: object
+      additionalProperties: false
+      required:
+        - port
+      properties:
+        port:
+          type: integer
+          minimum: 0
+          maximum: 65536
+    ContainerGroupProbeGrpc:
+      type: object
+      additionalProperties: false
+      required:
+        - service
+        - port
+      properties:
+        service:
+          type: string
+        port:
+          type: integer
+          minimum: 0
+          maximum: 65536
+    ContainerGroupProbeExec:
+      type: object
+      additionalProperties: false
+      required:
+        - command
+      properties:
+        command:
+          type: array
+          items:
+            type: string
+    Container:
+      type: object
+      description: Represents a container
+      additionalProperties: false
+      required:
+        - image
+        - resources
+        - command
+      properties:
+        image:
+          type: string
+          minLength: 1
+          maxLength: 1024
+        resources:
+          $ref: "#/components/schemas/ContainerResourceRequirements"
+        command:
+          type: array
+          minItems: 0
+          maxItems: 100
+          items:
+            type: string
+        environment_variables:
+          type: object
+          additionalProperties:
+            type: string
+        logging:
+          type: object
+          nullable: true
+          additionalProperties: false
+          properties:
+            new_relic:
+              type: object
+              nullable: true
+              additionalProperties: false
+              required:
+                - host
+                - ingestion_key
+              properties:
+                host:
+                  type: string
+                  minLength: 1
+                  maxLength: 1000
+                ingestion_key:
+                  type: string
+                  minLength: 1
+                  maxLength: 1000
+            splunk:
+              type: object
+              nullable: true
+              additionalProperties: false
+              required:
+                - host
+                - token
+              properties:
+                host:
+                  type: string
+                  minLength: 1
+                  maxLength: 1000
+                token:
+                  type: string
+                  minLength: 1
+                  maxLength: 1000
+            tcp:
+              type: object
+              nullable: true
+              additionalProperties: false
+              required:
+                - host
+                - port
+              properties:
+                host:
+                  type: string
+                  minLength: 1
+                  maxLength: 1000
+                port:
+                  type: integer
+                  minimum: 1
+                  maximum: 65535
+    CreateContainer:
+      type: object
+      description: Represents a container
+      additionalProperties: false
+      required:
+        - image
+        - resources
+      properties:
+        image:
+          type: string
+          minLength: 1
+          maxLength: 1024
+        resources:
+          $ref: "#/components/schemas/ContainerResourceRequirements"
+        command:
+          type: array
+          nullable: true
+          minItems: 0
+          maxItems: 100
+          items:
+            type: string
+        environment_variables:
+          type: object
+          additionalProperties:
+            type: string
+        logging:
+          type: object
+          nullable: true
+          additionalProperties: false
+          properties:
+            new_relic:
+              type: object
+              nullable: true
+              additionalProperties: false
+              required:
+                - host
+                - ingestion_key
+              properties:
+                host:
+                  type: string
+                  minLength: 1
+                  maxLength: 1000
+                ingestion_key:
+                  type: string
+                  minLength: 1
+                  maxLength: 1000
+            splunk:
+              type: object
+              nullable: true
+              additionalProperties: false
+              required:
+                - host
+                - token
+              properties:
+                host:
+                  type: string
+                  minLength: 1
+                  maxLength: 1000
+                token:
+                  type: string
+                  minLength: 1
+                  maxLength: 1000
+            tcp:
+              type: object
+              nullable: true
+              additionalProperties: false
+              required:
+                - host
+                - port
+              properties:
+                host:
+                  type: string
+                  minLength: 1
+                  maxLength: 1000
+                port:
+                  type: integer
+                  minimum: 1
+                  maximum: 65535
+        registry_authentication:
+          type: object
+          nullable: true
+          properties:
+            basic:
+              type: object
+              nullable: true
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+            gcp_gcr:
+              type: object
+              nullable: true
+              required:
+                - service_key
+              properties:
+                service_key:
+                  type: string
+            aws_ecr:
+              type: object
+              nullable: true
+              required:
+                - access_key_id
+                - secret_access_key
+              properties:
+                access_key_id:
+                  type: string
+                secret_access_key:
+                  type: string
+            docker_hub:
+              type: object
+              nullable: true
+              required:
+                - username
+                - personal_access_token
+              properties:
+                username:
+                  type: string
+                personal_access_token:
+                  type: string
+    ContainerResourceRequirements:
+      type: object
+      description: Represents a container resource requirements
+      additionalProperties: false
+      required:
+        - cpu
+        - memory
+      properties:
+        cpu:
+          type: integer
+          minimum: 1
+          maximum: 16
+        memory:
+          type: integer
+          minimum: 1
+          maximum: 16384
+        gpu_class:
+          type: string
+          nullable: true
+    ContainerGroupState:
+      type: object
+      description: Represents a container group state
+      additionalProperties: false
+      required:
+        - status
+        - start_time
+        - finish_time
+        - instance_status_count
+      properties:
+        status:
+          $ref: "#/components/schemas/ContainerGroupStatus"
+        description:
+          type: string
+          nullable: true
+        start_time:
+          type: string
+          format: date-time
+        finish_time:
+          type: string
+          format: date-time
+        instance_status_count:
+          $ref: "#/components/schemas/ContainerGroupInstanceStatusCount"
+    ContainerGroupInstanceStatusCount:
+      type: object
+      description: Represents a container group instance status count
+      additionalProperties: false
+      required:
+        - allocating_count
+        - creating_count
+        - running_count
+      properties:
+        allocating_count:
+          type: integer
+          minimum: 0
+        creating_count:
+          type: integer
+          minimum: 0
+        running_count:
+          type: integer
+          minimum: 0
+    ContainerGroupInstances:
+      type: object
+      description: Represents a list of container group instances
+      additionalProperties: false
+      required:
+        - instances
+      properties:
+        instances:
+          type: array
+          minItems: 0
+          maxItems: 1000
+          items:
+            type: object
+            additionalProperties: false
+            required:
+              - machine_id
+              - state
+              - update_time
+            properties:
+              machine_id:
+                type: string
+                description: The organization-specific machine ID
+              state:
+                type: string
+                enum: [creating, running]
+                description: The state of the container group instance
+              update_time:
+                type: string
+                format: date-time
+                description: The UTC date & time when the workload on this machine transitioned to the current state
+
+    # Container groups problem type enums
+    CreateContainerGroupProblemType:
+      type: string
+      nullable: true
+      enum:
+        - name_conflict
+        - created_quota_exceeded
+        - invalid_logging_configuration
+        - invalid_registry_authentication
+        - created_instance_quota_exceeded
+        - null
+    ListContainerGroupsProblemType:
+      type: string
+      nullable: true
+      enum:
+        - null
+    DeleteContainerGroupProblemType:
+      type: string
+      nullable: true
+      enum:
+        - null
+    GetContainerGroupProblemType:
+      type: string
+      nullable: true
+      enum:
+        - null
+    UpdateContainerGroupProblemType:
+      type: string
+      nullable: true
+      enum:
+        - updated_instance_quota_exceeded
+        - null
+    RestartContainerGroupProblemType:
+      type: string
+      nullable: true
+      enum:
+        - null
+    StartContainerGroupProblemType:
+      type: string
+      nullable: true
+      enum:
+        - null
+    StopContainerGroupProblemType:
+      type: string
+      nullable: true
+      enum:
+        - null
+    ReallocateContainerGroupInstanceProblemType:
+      type: string
+      nullable: true
+      enum:
+        - organization_not_found
+        - container_group_not_found
+        - node_not_scheduled
+        - container_group_instance_not_found
+        - organization_quotas_not_defined
+        - too_many_requests
+        - unexpected_error
+        - null
+    RecreateContainerGroupInstanceProblemType:
+      type: string
+      nullable: true
+      enum:
+        - organization_not_found
+        - container_group_not_found
+        - node_not_scheduled
+        - container_group_instance_not_found
+        - organization_quotas_not_defined
+        - too_many_requests
+        - unexpected_error
+        - null
+    RestartContainerGroupInstanceProblemType:
+      type: string
+      nullable: true
+      enum:
+        - organization_not_found
+        - container_group_not_found
+        - node_not_scheduled
+        - container_group_instance_not_found
+        - organization_quotas_not_defined
+        - too_many_requests
+        - unexpected_error
+        - null
+
+    # GPU classes
+    GpuClass:
+      type: object
+      description: Represents a GPU Class
+      additionalProperties: false
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 63
+          description: The GPU class name
+    GpuClassesList:
+      type: object
+      description: Represents a list of GPU classes
+      additionalProperties: false
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          minItems: 0
+          maxItems: 100
+          items:
+            $ref: "#/components/schemas/GpuClass"
+          description: The list of GPU classes
+
+        # Quotas
+    Quotas:
+      type: object
+      description: Represents the organization quotas
+      additionalProperties: false
+      required:
+        - container_groups_quotas
+        - recipes_quotas
+      properties:
+        container_groups_quotas:
+          $ref: "#/components/schemas/ContainerGroupsQuotas"
+        create_time:
+          type: string
+          format: date-time
+          description: The time the resource was created
+        recipes_quotas:
+          $ref: "#/components/schemas/RecipesQuotas"
+        update_time:
+          type: string
+          format: date-time
+          description: The time the resource was last updated
+    ContainerGroupsQuotas:
+      type: object
+      required:
+        - max_created_container_groups
+        - container_instance_quota
+      properties:
+        max_created_container_groups:
+          type: integer
+        container_instance_quota:
+          type: integer
+        max_container_group_reallocations_per_minute:
+          type: integer
+          minimum: 0
+          default: 10
+        max_container_group_recreates_per_minute:
+          type: integer
+          minimum: 0
+          default: 10
+        max_container_group_restarts_per_minute:
+          type: integer
+          minimum: 0
+          default: 10
+    RecipesQuotas:
+      type: object
+      required:
+        - max_created_recipe_deployments
+        - recipe_instance_quota
+      properties:
+        max_created_recipe_deployments:
+          type: integer
+        recipe_instance_quota:
+          type: integer
+
+    # Recipes
+    Recipe:
+      type: object
+      description: Represents a recipe
+      additionalProperties: false
+      required:
+        - id
+        - name
+        - readme
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The unique identifier
+        name:
+          type: string
+          description: The recipe name
+        readme:
+          type: string
+          description: A markdown file containing a brief summary of the recipe
+        resources:
+          $ref: "#/components/schemas/RecipeResources"
+        networking:
+          $ref: "#/components/schemas/RecipeNetworking"
+    RecipeResources:
+      type: object
+      description: Represents a recipe resources
+      additionalProperties: false
+      required:
+        - cpu
+        - ram
+        - gpu_class
+      properties:
+        cpu:
+          type: integer
+        ram:
+          type: integer
+        gpu_class:
+          type: string
+    RecipeList:
+      type: object
+      description: Represents a list of recipes
+      additionalProperties: false
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          minItems: 0
+          maxItems: 100
+          items:
+            $ref: "#/components/schemas/Recipe"
+          description: The list of items
+    RecipeDeployment:
+      type: object
+      description: Represents a deployed recipe
+      additionalProperties: false
+      required:
+        - id
+        - name
+        - display_name
+        - replicas
+        - current_state
+        - recipe
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        display_name:
+          type: string
+          minLength: 2
+          maxLength: 63
+          pattern: "^[a-z][a-z0-9-]{0,61}[a-z0-9]$"
+        replicas:
+          type: integer
+          minimum: 1
+          maximum: 250
+        current_state:
+          $ref: "#/components/schemas/ContainerGroupState"
+        recipe:
+          $ref: "#/components/schemas/Recipe"
+        networking:
+          $ref: "#/components/schemas/RecipeNetworking"
+    RecipeNetworking:
+      type: object
+      nullable: true
+      description: Represents recipe networking parameters
+      additionalProperties: false
+      required:
+        - protocol
+        - port
+        - auth
+        - dns
+      properties:
+        protocol:
+          $ref: "#/components/schemas/RecipeNetworkingProtocol"
+        port:
+          type: integer
+          minimum: 1
+          maximum: 65535
+        auth:
+          type: boolean
+        dns:
+          type: string
+          format: url
+    RecipeNetworkingProtocol:
+      type: string
+      enum:
+        - http
+    RecipeDeploymentList:
+      type: object
+      description: Represents a list of recipe deployments
+      additionalProperties: false
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          minItems: 0
+          maxItems: 100
+          items:
+            $ref: "#/components/schemas/RecipeDeployment"
+    CreateRecipeDeployment:
+      type: object
+      description: Represents a request to create a new recipe deployment
+      additionalProperties: false
+      required:
+        - name
+        - display_name
+        - replicas
+        - recipe_name
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 63
+          pattern: "^[a-z][a-z0-9-]{0,61}[a-z0-9]$"
+        display_name:
+          type: string
+          nullable: true
+          minLength: 2
+          maxLength: 63
+          pattern: "^[ ,-.0-9A-Za-z]+$"
+        replicas:
+          type: integer
+          minimum: 1
+          maximum: 250
+        recipe_name:
+          type: string
+          minLength: 2
+          maxLength: 63
+          pattern: "^[a-z][a-z0-9-]{0,62}[a-z0-9]$"
+        networking:
+          $ref: "#/components/schemas/CreateRecipeNetworking"
+    CreateRecipeNetworking:
+      type: object
+      nullable: true
+      description: Represents container group networking parameters
+      additionalProperties: false
+      required:
+        - protocol
+        - port
+        - auth
+      properties:
+        protocol:
+          $ref: "#/components/schemas/RecipeNetworkingProtocol"
+        port:
+          type: integer
+          minimum: 1
+          maximum: 65535
+        auth:
+          type: boolean
+    UpdateRecipeDeployment:
+      type: object
+      description: Represents a request to update a recipe deployment
+      additionalProperties: false
+      properties:
+        display_name:
+          type: string
+          nullable: true
+          minLength: 2
+          maxLength: 63
+          pattern: "^[ ,-.0-9A-Za-z]+$"
+        replicas:
+          type: integer
+          nullable: true
+          minimum: 1
+          maximum: 250
+    RecipeDeploymentInstances:
+      type: object
+      description: Represents a list of recipe deployment instances
+      additionalProperties: false
+      required:
+        - instances
+      properties:
+        instances:
+          type: array
+          minItems: 0
+          maxItems: 1000
+          items:
+            type: object
+            additionalProperties: false
+            required:
+              - machine_id
+              - state
+              - update_time
+            properties:
+              machine_id:
+                type: string
+                description: The organization-specific machine ID
+              state:
+                type: string
+                enum: [creating, running]
+                description: The state of the recipe deployment instance
+              update_time:
+                type: string
+                format: date-time
+                description: The UTC date & time when the workload on this machine transitioned to the current state
+
+    # Recipe problem type enums
+    ListRecipesProblemType:
+      type: string
+      nullable: true
+      enum:
+        - null
+    GetRecipeProblemType:
+      type: string
+      nullable: true
+      enum:
+        - null
+    GetRecipeDeploymentProblemType:
+      type: string
+      nullable: true
+      enum:
+        - null
+    ListRecipeDeploymentsProblemType:
+      type: string
+      nullable: true
+      enum:
+        - null
+    CreateRecipeDeploymentProblemType:
+      type: string
+      nullable: true
+      enum:
+        - billing_information_required
+        - created_quota_exceeded
+        - name_conflict
+        - project_not_found
+        - unexpected_error
+        - organization_not_found
+        - recipe_not_found
+        - created_instance_quota_exceeded
+        - null
+    UpdateRecipeDeploymentProblemType:
+      type: string
+      nullable: true
+      enum:
+        - updated_instance_quota_exceeded
+        - null
+    DeleteRecipeDeploymentProblemType:
+      type: string
+      nullable: true
+      enum:
+        - null
+    StartRecipeDeploymentProblemType:
+      type: string
+      nullable: true
+      enum:
+        - null
+    StopRecipeDeploymentProblemType:
+      type: string
+      nullable: true
+      enum:
+        - null
+    RestartRecipeDeploymentProblemType:
+      type: string
+      nullable: true
+      enum:
+        - null
+
+    # CMS problem type enums
+    ListGpuClassesProblemType:
+      type: string
+      nullable: true
+      enum:
+        - null
+
+  requestBodies:
+    # Salad Container Engine
+    CreateContainerGroup:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/CreateContainerGroup"
+          examples:
+            jsonExample:
+              value:
+                name: sim1
+                container:
+                  image: acme-corp/anvil-drop-simulator:v65535
+                  resources:
+                    cpu: 1
+                    memory: 2048
+                  command: []
+                restart_policy: always
+                replicas: 1
+    UpdateContainerGroup:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/UpdateContainerGroup"
+          examples:
+            jsonExample:
+              value:
+                display_name: Simulation 1
+
+    # Recipes
+    CreateRecipeDeployment:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/CreateRecipeDeployment"
+          examples:
+            jsonExample:
+              value:
+                name: sim1
+                display_name: Sim 1
+                replicas: 1
+                recipe_name: salad_recipe
+    UpdateRecipeDeployment:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/UpdateRecipeDeployment"
+          examples:
+            jsonExample:
+              value:
+                display_name: Salad Deployed Recipe
+                replicas: 1
+
+  responses:
+    # Standard Errors
+    "400":
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetails"
+          examples:
+            jsonExample:
+              value:
+                type: "about:blank"
+                title: "Bad Request"
+                status: 400
+                detail: "Bad Request"
+                instance: "60907fdc"
+    "401":
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetails"
+          examples:
+            jsonExample:
+              value:
+                type: "about:blank"
+                title: "Unauthorized"
+                status: 401
+                detail: "Unauthorized"
+                instance: "dc907f60"
+    "403":
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetails"
+          examples:
+            jsonExample:
+              value:
+                type: "about:blank"
+                title: "Forbidden"
+                status: 403
+                detail: "Forbidden"
+                instance: "962fc00e"
+    "404":
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetails"
+          examples:
+            jsonExample:
+              value:
+                type: "about:blank"
+                title: "Not Found"
+                status: 404
+                detail: "Not Found"
+                instance: "72ea5f29"
+    "429":
+      description: Too Many Requests
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetails"
+          examples:
+            jsonExample:
+              value:
+                type: "about:blank"
+                title: "Too Many Requests"
+                status: 409
+                detail: "Too Many Requests"
+                instance: "cd6306ee"
+    UnknownError:
+      description: Unknown Error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetails"
+          examples:
+            jsonExample:
+              value:
+                type: "about:blank"
+                title: "Unknown Error"
+                status: 500
+                detail: "Unknown Error"
+                instance: "188f9bbb"
+
+    # Salad Container Engine
+    GetContainerGroup:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ContainerGroup"
+          examples:
+            jsonExample:
+              value:
+                id: 500dec9c-aaf3-4a0b-aa7f-de6483d0b9b1
+                name: sim1
+                display_name: Simulation 1
+                container:
+                  image: acme-corp/anvil-drop-simulator:v65535
+                  resources:
+                    cpu: 1
+                    memory: 2048
+                  command: []
+                restart_policy: always
+                replicas: 1
+                current_state:
+                  status: stopped
+                  start_time: "2020-07-04T19:00:00Z"
+                  finish_time: "2020-07-04T19:00:00Z"
+                  instance_status_counts:
+                    allocating_count: 1
+                    creating_count: 1
+                    running_count: 1
+                create_time: "2020-07-04T19:00:00Z"
+                update_time: "2020-07-04T19:00:00Z"
+    ListContainerGroups:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ContainerGroupList"
+          examples:
+            jsonExample:
+              value:
+                items:
+                  - id: 500dec9c-aaf3-4a0b-aa7f-de6483d0b9b1
+                    name: sim1
+                    display_name: Simulation 1
+                    container:
+                      image: acme-corp/anvil-drop-simulator:v65535
+                      resources:
+                        cpu: 1
+                        memory: 2048
+                      command: []
+                    restart_policy: always
+                    replicas: 1
+                    current_state:
+                      status: stopped
+                      start_time: "2020-07-04T19:00:00Z"
+                      finish_time: "2020-07-04T19:00:00Z"
+                      instance_status_counts:
+                        allocating_count: 1
+                        creating_count: 1
+                        running_count: 1
+                    create_time: "2020-07-04T19:00:00Z"
+                    update_time: "2020-07-04T19:00:00Z"
+                  - id: b697f678-b987-4992-bbbf-d6dda171b34a
+                    name: sim2
+                    display_name: Simulation 2
+                    container:
+                      image: acme-corp/anvil-drop-simulator:v65536
+                      resources:
+                        cpu: 1
+                        memory: 2048
+                      command: []
+                    restart_policy: always
+                    replicas: 1
+                    current_state:
+                      status: stopped
+                      start_time: "2020-07-04T19:00:00Z"
+                      finish_time: "2020-07-04T19:00:00Z"
+                      instance_status_counts:
+                        allocating_count: 1
+                        creating_count: 1
+                        running_count: 1
+                    create_time: "2020-07-04T19:00:00Z"
+                    update_time: "2020-07-04T19:00:00Z"
+    CreateContainerGroup:
+      description: Created
+      headers:
+        Location:
+          schema:
+            type: string
+            example: /organizations/acme-corp/projects/anvil-drop-simulator/containers/sim1
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ContainerGroup"
+          examples:
+            jsonExample:
+              value:
+                id: 500dec9c-aaf3-4a0b-aa7f-de6483d0b9b1
+                name: sim1
+                display_name: Simulation 1
+                container:
+                  image: acme-corp/anvil-drop-simulator:v65535
+                  resources:
+                    cpu: 1
+                    memory: 2048
+                  command: []
+                restart_policy: always
+                replicas: 1
+                current_state:
+                  status: stopped
+                  start_time: "2020-07-04T19:00:00Z"
+                  finish_time: "2020-07-04T19:00:00Z"
+                  instance_status_counts:
+                    allocating_count: 1
+                    creating_count: 1
+                    running_count: 1
+                create_time: "2020-07-04T19:00:00Z"
+                update_time: "2020-07-04T19:00:00Z"
+      links:
+        get_container_group_by_name:
+          operationId: get_container_group
+          parameters:
+            container_group_name: "$response.body#/name"
+    UpdateContainerGroup:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ContainerGroup"
+          examples:
+            jsonExample:
+              value:
+                id: 500dec9c-aaf3-4a0b-aa7f-de6483d0b9b1
+                name: sim1
+                display_name: Simulation 1
+                container:
+                  image: acme-corp/anvil-drop-simulator:v65535
+                  resources:
+                    cpu: 1
+                    memory: 2048
+                  command: []
+                restart_policy: always
+                replicas: 1
+                current_state:
+                  status: stopped
+                  start_time: "2020-07-04T19:00:00Z"
+                  finish_time: "2020-07-04T19:00:00Z"
+                  instance_status_counts:
+                    allocating_count: 1
+                    creating_count: 1
+                    running_count: 1
+                create_time: "2020-07-04T19:00:00Z"
+                update_time: "2020-07-04T19:00:00Z"
+    DeleteContainerGroup:
+      description: Accepted
+    StartContainerGroup:
+      description: Accepted
+    RestartContainerGroup:
+      description: Accepted
+    StopContainerGroup:
+      description: Accepted
+    ListContainerGroupInstances:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ContainerGroupInstances"
+          example:
+            instances:
+              - machine_id: "5ebfa363-6e0b-4db1-b9be-70ed4995d0b1"
+                state: running
+                update_time: "2023-05-04T05:41:05Z"
+              - machine_id: "a6c2e6d5-6c5a-4b3b-a4d4-4b13c2b634ad"
+                state: creating
+                update_time: "2023-05-04T05:38:12Z"
+    ReallocateContainerGroupInstance:
+      description: Accepted
+    RecreateContainerGroupInstance:
+      description: Accepted
+    RestartContainerGroupInstance:
+      description: Accepted
+
+    # Organization GPU classes
+    ListGpuClasses:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/GpuClassesList"
+          examples:
+            jsonExample:
+              value:
+                items:
+                  - name: g4dn.xlarge
+                  - name: g4dn.metal
+
+    # Quotas
+    GetQuotas:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Quotas"
+          examples:
+            jsonExample:
+              value:
+                container_group_quotas:
+                  max_created_container_groups: 10
+                  container_instance_quota: 10
+                create_time: "2020-07-04T19:00:00Z"
+                recipes_quotas:
+                  max_created_recipe_deployments: 10
+                  recipe_instance_quota: 10
+                update_time: "2020-07-04T19:00:00Z"
+
+    # Recipes
+    GetRecipe:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Recipe"
+          examples:
+            jsonExample:
+              value:
+                id: 3cc0c401-4159-4760-a1e1-b2dec9c2440e
+                name: anvil-drop-simulator
+                readme: "test-readme"
+    ListRecipes:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/RecipeList"
+          examples:
+            jsonExample:
+              value:
+                items:
+                  - id: 3cc0c401-4159-4760-a1e1-b2dec9c2440e
+                    name: anvil-drop-simulator
+                    readme: "test-readme"
+                  - id: 3cc0c401-4159-4760-a1e1-b2dec9c22893
+                    name: anvil-drop-simulator-2
+                    readme: "test-readme-2"
+    GetRecipeDeployment:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/RecipeDeployment"
+          examples:
+            jsonExample:
+              value:
+                id: 500dec9c-aaf3-4a0b-aa7f-de6483d0b9b1
+                name: sim1
+                display_name: Simulation 1
+                replicas: 1
+                current_state:
+                  status: stopped
+                  start_time: "2020-07-04T19:00:00Z"
+                  finish_time: "2020-07-04T19:00:00Z"
+                  instance_status_counts:
+                    allocating_count: 1
+                    creating_count: 1
+                    running_count: 1
+                recipe:
+                  id: 3cc0c401-4159-4760-a1e1-b2dec9c2440e
+                  name: anvil-drop-simulator
+                  display_name:
+                  readme: "test-readme"
+                  resources:
+                    cpu: 1
+                    ram: 1
+                    gpu_class: "high"
+    ListRecipeDeployments:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/RecipeDeploymentList"
+          examples:
+            jsonExample:
+              value:
+                items:
+                  - id: 500dec9c-aaf3-4a0b-aa7f-de6483d0b9b1
+                    name: sim1
+                    display_name: Simulation 1
+                    replicas: 1
+                    current_state:
+                      status: stopped
+                      start_time: "2020-07-04T19:00:00Z"
+                      finish_time: "2020-07-04T19:00:00Z"
+                      instance_status_counts:
+                        allocating_count: 1
+                        creating_count: 1
+                        running_count: 1
+                    recipe:
+                      id: 3cc0c401-4159-4760-a1e1-b2dec9c2440e
+                      name: anvil-drop-simulator
+                      display_name:
+                      readme: "test-readme"
+                      resources:
+                        cpu: 1
+                        ram: 1
+                        gpu_class: "high"
+                  - id: b697f678-b987-4992-bbbf-d6dda171b34a
+                    name: sim2
+                    display_name: Simulation 2
+                    replicas: 1
+                    current_state:
+                      status: stopped
+                      start_time: "2020-07-04T19:00:00Z"
+                      finish_time: "2020-07-04T19:00:00Z"
+                      instance_status_counts:
+                        allocating_count: 1
+                        creating_count: 1
+                        running_count: 1
+                    recipe:
+                      id: 3cc0c401-4159-4760-a1e1-b2dec9c22893
+                      name: anvil-drop-simulator-2
+                      readme: "test-readme-2"
+                      resources:
+                        cpu: 2
+                        ram: 2
+                        gpu_class: "high"
+    CreateRecipeDeployment:
+      description: Created
+      headers:
+        Location:
+          schema:
+            type: string
+            example: /organizations/acme-corp/projects/anvil-drop-simulator/recipe-deployments/salad-recipe
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/RecipeDeployment"
+          example:
+            jsonExample:
+              value:
+                id: 500dec9c-aaf3-4a0b-aa7f-de6483d0b9b1
+                name: sim1
+                display_name: Simulation 1
+                replicas: 1
+                current_state:
+                  status: stopped
+                  start_time: "2020-07-04T19:00:00Z"
+                  finish_time: "2020-07-04T19:00:00Z"
+                  instance_status_counts:
+                    allocating_count: 1
+                    creating_count: 1
+                    running_count: 1
+                recipe:
+                  id: 3cc0c401-4159-4760-a1e1-b2dec9c2440e
+                  name: anvil-drop-simulator
+                  display_name:
+                  readme: "test-readme"
+                  resources:
+                    cpu: 1
+                    ram: 1
+                    gpu_class: "high"
+    UpdateRecipeDeployment:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/RecipeDeployment"
+          examples:
+            jsonExample:
+              value:
+                id: 500dec9c-aaf3-4a0b-aa7f-de6483d0b9b1
+                name: sim1
+                display_name: Simulation 1
+                replicas: 1
+                current_state:
+                  status: stopped
+                  start_time: "2020-07-04T19:00:00Z"
+                  finish_time: "2020-07-04T19:00:00Z"
+                  instance_status_counts:
+                    allocating_count: 1
+                    creating_count: 1
+                    running_count: 1
+                recipe:
+                  id: 3cc0c401-4159-4760-a1e1-b2dec9c2440e
+                  name: anvil-drop-simulator
+                  display_name:
+                  readme: "test-readme"
+                  resources:
+                    cpu: 1
+                    ram: 1
+                    gpu_class: "high"
+    DeleteRecipeDeployment:
+      description: Accepted
+    StartRecipeDeployment:
+      description: Accepted
+    StopRecipeDeployment:
+      description: Accepted
+    RestartRecipeDeployment:
+      description: Accepted
+    ListRecipeDeploymentInstances:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/RecipeDeploymentInstances"
+          example:
+            instances:
+              - machine_id: "5ebfa363-6e0b-4db1-b9be-70ed4995d0b1"
+                state: running
+                update_time: "2023-05-04T05:41:05Z"
+              - machine_id: "a6c2e6d5-6c5a-4b3b-a4d4-4b13c2b634ad"
+                state: creating
+                update_time: "2023-05-04T05:38:12Z"
+
+tags:
+  - name: container_groups
+    description: Container Groups
+  - name: organization_data
+    description: Auxiliary organization data and info
+  - name: quotas
+    description: quotas
