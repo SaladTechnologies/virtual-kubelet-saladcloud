@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: sample-pod
+spec:
+  nodeName: saladcloud-cx9wpxmz
+  containers:
+    - name: nginx
+      image: nginx

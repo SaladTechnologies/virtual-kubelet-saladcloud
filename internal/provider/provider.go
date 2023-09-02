@@ -2,8 +2,11 @@ package provider
 
 import (
 	"context"
+	"fmt"
 	"io"
+	"os"
 
+	saladclient "github.com/lucklypriyansh-2/salad-client"
 	dto "github.com/prometheus/client_model/go"
 	nodeapi "github.com/virtual-kubelet/virtual-kubelet/node/api"
 	"github.com/virtual-kubelet/virtual-kubelet/node/api/statsv1alpha1"
@@ -18,6 +21,20 @@ func NewSaladCloudProvider(ctx context.Context) (*SaladCloudProvider, error) {
 }
 
 func (p *SaladCloudProvider) CreatePod(ctx context.Context, pod *corev1.Pod) error {
+
+	organizationName := "organizationName_example"                                                                                                                                                                                                                  // string | The unique organization name
+	projectName := "projectName_example"                                                                                                                                                                                                                            // string | The unique project name
+	createContainerGroup := *saladclient.NewCreateContainerGroup("Name_example", *saladclient.NewCreateContainer("Image_example", *saladclient.NewContainerResourceRequirements(int32(123), int32(123))), saladclient.ContainerRestartPolicy("always"), int32(123)) // CreateContainerGroup |
+
+	configuration := saladclient.NewConfiguration()
+	apiClient := saladclient.NewAPIClient(configuration)
+	resp, r, err := apiClient.ContainerGroupsAPI.CreateContainerGroup(context.Background(), organizationName, projectName).CreateContainerGroup(createContainerGroup).Execute()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error when calling `ContainerGroupsAPI.CreateContainerGroup``: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+	}
+	// response from `CreateContainerGroup`: ContainerGroup
+	fmt.Fprintf(os.Stdout, "Response from `ContainerGroupsAPI.CreateContainerGroup`: %v\n", resp)
 	return nil
 }
 

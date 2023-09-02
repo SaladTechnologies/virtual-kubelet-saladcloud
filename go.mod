@@ -1,8 +1,9 @@
 module github.com/SaladTechnologies/virtual-kubelet-saladcloud
 
-go 1.21.0
+go 1.20
 
 require (
+	github.com/lucklypriyansh-2/salad-client v0.0.0-20230902193233-7c5a02b4c6d7
 	github.com/prometheus/client_model v0.4.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/virtual-kubelet/virtual-kubelet v1.10.0
@@ -55,7 +56,7 @@ require (
 	github.com/prometheus/client_golang v1.16.0 // indirect
 	github.com/prometheus/common v0.44.0 // indirect
 	github.com/prometheus/procfs v0.10.1 // indirect
-	github.com/spf13/cobra v1.7.0 // indirect
+	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stoewer/go-strcase v1.2.0 // indirect
 	go.etcd.io/etcd/api/v3 v3.5.9 // indirect
