@@ -3,32 +3,35 @@ package provider
 import (
 	"context"
 	"fmt"
-	"io"
-	"os"
-
+	"github.com/SaladTechnologies/virtual-kubelet-saladcloud/internal/models"
+	"github.com/SaladTechnologies/virtual-kubelet-saladcloud/internal/utils"
 	saladclient "github.com/lucklypriyansh-2/salad-client"
 	dto "github.com/prometheus/client_model/go"
 	nodeapi "github.com/virtual-kubelet/virtual-kubelet/node/api"
 	"github.com/virtual-kubelet/virtual-kubelet/node/api/statsv1alpha1"
+	"io"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"os"
 )
 
 type SaladCloudProvider struct {
+	inputVars models.InputVars
 }
 
-func NewSaladCloudProvider(ctx context.Context) (*SaladCloudProvider, error) {
-	return &SaladCloudProvider{}, nil
+func NewSaladCloudProvider(ctx context.Context, inputVars models.InputVars) (*SaladCloudProvider, error) {
+	return &SaladCloudProvider{
+		inputVars: inputVars,
+	}, nil
 }
 
 func (p *SaladCloudProvider) CreatePod(ctx context.Context, pod *corev1.Pod) error {
 
-	organizationName := "organizationName_example"                                                                                                                                                                                                                  // string | The unique organization name
-	projectName := "projectName_example"                                                                                                                                                                                                                            // string | The unique project name
-	createContainerGroup := *saladclient.NewCreateContainerGroup("Name_example", *saladclient.NewCreateContainer("Image_example", *saladclient.NewContainerResourceRequirements(int32(123), int32(123))), saladclient.ContainerRestartPolicy("always"), int32(123)) // CreateContainerGroup |
-
+	cpu, memory := utils.GetPodResource(pod.Spec)
+	createContainerGroup := *saladclient.NewCreateContainerGroup(utils.GetPodName(pod.Namespace, pod.Name), *saladclient.NewCreateContainer(pod.Spec.Containers[0].Image, *saladclient.NewContainerResourceRequirements(int32(cpu), int32(memory))), saladclient.ContainerRestartPolicy("always"), int32(123)) // CreateContainerGroup |
 	configuration := saladclient.NewConfiguration()
 	apiClient := saladclient.NewAPIClient(configuration)
-	resp, r, err := apiClient.ContainerGroupsAPI.CreateContainerGroup(context.Background(), organizationName, projectName).CreateContainerGroup(createContainerGroup).Execute()
+	resp, r, err := apiClient.ContainerGroupsAPI.CreateContainerGroup(context.Background(), p.inputVars.ProjectName, p.inputVars.OrganizationName).CreateContainerGroup(createContainerGroup).Execute()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error when calling `ContainerGroupsAPI.CreateContainerGroup``: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
@@ -47,7 +50,33 @@ func (p *SaladCloudProvider) DeletePod(ctx context.Context, pod *corev1.Pod) err
 }
 
 func (p *SaladCloudProvider) GetPod(ctx context.Context, namespace string, name string) (*corev1.Pod, error) {
-	return nil, nil
+
+	configuration := saladclient.NewConfiguration()
+	apiClient := saladclient.NewAPIClient(configuration)
+	resp, r, err := apiClient.ContainerGroupsAPI.GetContainerGroup(context.Background(), p.inputVars.OrganizationName, p.inputVars.ProjectName, utils.GetPodName(namespace, name)).Execute()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error when calling `ContainerGroupsAPI.GetContainerGroup``: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+		return nil, err
+	}
+	fmt.Fprintf(os.Stdout, "Response from `ContainerGroupsAPI.GetContainerGroup`: %v\n", resp)
+	startTime := metav1.NewTime(resp.CreateTime)
+	pod := &corev1.Pod{
+		Spec: corev1.PodSpec{
+			Containers: []corev1.Container{
+				{
+					Name:  resp.Name,
+					Image: resp.Container.Image,
+				},
+			},
+		},
+		Status: corev1.PodStatus{
+			Phase:     utils.GetPodPhaseFromContainerGroupState(resp.CurrentState),
+			StartTime: &startTime,
+		},
+	}
+
+	return pod, nil
 }
 
 func (p *SaladCloudProvider) GetPodStatus(ctx context.Context, namespace string, name string) (*corev1.PodStatus, error) {
