@@ -36,6 +36,7 @@ var Inputs = models.InputVars{
 	TaintEffect:      string(v1.TaintEffectNoSchedule),
 	TaintValue:       "saladCloud",
 	ProjectName:      "projectName_example",
+	ApiKey:           "apiKey_example",
 }
 
 func init() {
@@ -47,6 +48,7 @@ func init() {
 	virtualKubeletCommand.Flags().StringVar(&Inputs.NodeName, "nodename", Inputs.NodeName, "kubernetes node name")
 	virtualKubeletCommand.Flags().StringVar(&Inputs.KubeConfig, "kube-config", Inputs.KubeConfig, "kubeconfig file")
 	virtualKubeletCommand.Flags().StringVar(&Inputs.OrganizationName, "organizationName", Inputs.OrganizationName, "Organization Name To Be used by Salad Client")
+	virtualKubeletCommand.Flags().StringVar(&Inputs.ApiKey, "api-key", Inputs.ApiKey, "Api Key for the Salad Client")
 	requiredFlagError := virtualKubeletCommand.MarkFlagRequired("organizationName")
 	if requiredFlagError != nil {
 		logrus.WithError(requiredFlagError).Fatal("Error marking organizationName as required")
@@ -71,14 +73,14 @@ func main() {
 
 func runNode(ctx context.Context) error {
 
-	Inputs.NodeName = fmt.Sprintf("%s-%s", Inputs.NodeName, randSeq(1000))
+	Inputs.NodeName = fmt.Sprintf("%s-%s", Inputs.NodeName, randSeq(3))
 
 	node, err := nodeutil.NewNode(Inputs.NodeName, func(pc nodeutil.ProviderConfig) (nodeutil.Provider, node.NodeProvider, error) {
 		p, err := provider.NewSaladCloudProvider(context.Background(), Inputs)
 		if err != nil {
 			return nil, nil, err
 		}
-
+		p.ConfigureNode(ctx, pc.Node)
 		return p, nil, nil
 	}, withClient, withTaint)
 	if err != nil {
@@ -86,12 +88,12 @@ func runNode(ctx context.Context) error {
 	}
 
 	go func() {
-		if err := node.Run(context.Background()); err != nil {
+		if err := node.Run(ctx); err != nil {
 			log.G(ctx).Fatal(err)
 		}
 	}()
 
-	err = node.WaitReady(context.Background(), 0)
+	err = node.WaitReady(ctx, 0)
 	if err != nil {
 		log.G(ctx).Fatal(err)
 	}

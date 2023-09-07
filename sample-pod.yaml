@@ -1,28 +1,22 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: demo-pod  # Assuming you'd want a name for the Pod
+  name: demo-pod-7
 spec:
   containers:
     - name: my-container
-      image: my-image
-      command: ["/path/to/your-command"]  # Replace with your command
-      args: ["arg1", "arg2"]  # Replace with your arguments
-      env:
-        - name: ENV_VAR_NAME  # Replace with your environment variable name
-          value: "Env Var Value"  # Replace with the value of your environment variable
+      image: docker.io/heygordian/node-app:latest
       resources:
         requests:
-          memory: "64Mi"
-          cpu: "250m"
+          memory: "1Gi"
+          cpu: "1"
         limits:
-          memory: "128Mi"
-          cpu: "500m"
-  tolerations:
-    - key: virtual-kubelet.io/provider
-      operator: Equal
-      value: saladCloud
-      effect: NoSchedule
+          memory: "1Gi"
+          cpu: "1"
   nodeSelector:
     kubernetes.io/role: agent
-    type: virtual-kubelet
+  tolerations:
+    - key: "virtual-kubelet.io/provider"
+      operator: "Equal"
+      value: "saladCloud"
+      effect: "NoSchedule"

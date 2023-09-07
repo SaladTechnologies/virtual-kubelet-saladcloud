@@ -5,11 +5,30 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-// write a function that takes the podspec and return the number of cpu and memory in a integer format and covert cpu to core format and memory to gigabyte format
+// roundUpToNearest returns the nearest larger integer from the given list.
+func roundUpToNearest(value int64, list []int64) int64 {
+	for _, v := range list {
+		if value <= v {
+			return v
+		}
+	}
+	return list[len(list)-1]
+}
+
+// GetPodResource returns the total CPU in rounded cores and memory rounded to gigabytes (GB) for the provided PodSpec.
 func GetPodResource(podSpec corev1.PodSpec) (cpu int64, memory int64) {
+	allowedCPUValues := []int64{1, 2, 3, 4, 6, 8, 12, 16}
+
+	allowedMemoryValues := []int64{1024, 2048, 3, 4, 5, 6, 12} // in GB
+
 	for _, container := range podSpec.Containers {
-		cpu += container.Resources.Requests.Cpu().MilliValue()
-		memory += container.Resources.Requests.Memory().Value()
+		// Convert milliCPU to cores and round to nearest value in the list
+		cpuValue := container.Resources.Requests.Cpu().MilliValue() / 1000
+		cpu += roundUpToNearest(cpuValue, allowedCPUValues)
+
+		// Convert bytes to gigabytes (MB) and ensure it's a multiple of 1 GB (1 GB = 1e9 bytes)
+		memValue := container.Resources.Requests.Memory().Value() / 1e6
+		memory += roundUpToNearest(memValue, allowedMemoryValues)
 	}
 	return
 }
@@ -40,5 +59,7 @@ func GetPodPhaseFromContainerGroupState(containerGroupState saladclient.Containe
 		return corev1.PodPending
 
 	}
+
+	return ""
 
 }

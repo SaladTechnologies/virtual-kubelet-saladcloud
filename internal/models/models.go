@@ -10,4 +10,5 @@ type InputVars struct {
 	TaintValue       string
 	OrganizationName string
 	ProjectName      string
+	ApiKey           string
 }
