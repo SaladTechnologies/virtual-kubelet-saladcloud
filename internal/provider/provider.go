@@ -31,6 +31,7 @@ type SaladCloudProvider struct {
 	operatingSystem string
 	apiClient       *saladclient.APIClient
 	countryCodes    []saladclient.CountryCode
+	notifier        func(*corev1.Pod)
 }
 
 const (
@@ -85,23 +86,29 @@ func (p *SaladCloudProvider) getNodeCapacity() corev1.ResourceList {
 func (p *SaladCloudProvider) CreatePod(ctx context.Context, pod *corev1.Pod) error {
 	ctx, span := trace.StartSpan(ctx, "CreatePod")
 	defer span.End()
-	log.G(ctx).Infof("Starting the process to create Pod: %s", pod.Name)
+	log.G(ctx).Infof("Starting the process to create Pod: %s", pod.ObjectMeta.GetName())
 
 	if err := p.createAndExecuteContainerGroup(ctx, pod); err != nil {
 		return err
 	}
+	// wait for 3 seconds to start the container
+	time.Sleep(3 * time.Second)
 
 	if err := p.startContainerGroup(ctx, pod); err != nil {
+		log.G(ctx).Errorf("Error starting the container: %s", pod.ObjectMeta.GetName(), err.Error())
 		return err
 	}
 
 	p.updatePodStatus(pod)
 
 	log.G(ctx).Infof("Successfully created and started Pod: %s", pod.Name)
+	//p.notifier(pod)
 	return nil
 }
 
 func (p *SaladCloudProvider) UpdatePod(ctx context.Context, pod *corev1.Pod) error {
+	log.G(ctx).Infof("Called the Update Pod : %s", pod.ObjectMeta.GetName())
+	//p.notifier(pod)
 	return nil
 }
 
@@ -109,14 +116,15 @@ func (p *SaladCloudProvider) DeletePod(ctx context.Context, pod *corev1.Pod) err
 	ctx, span := trace.StartSpan(ctx, "DeletePod")
 	defer span.End()
 
-	log.G(ctx).Infof("Starting the deletion process for Pod: %s", pod.Name)
+	log.G(ctx).Infof("Starting the deletion process for Pod: %s", pod.ObjectMeta.GetName())
 
 	if err := p.executeContainerGroupDeletion(ctx, pod); err != nil {
+		log.G(ctx).Infof("Failed to delete the container : %s", pod.ObjectMeta.GetName(), err.Error())
 		return err
 	}
 
 	p.updatePodStatusAfterDeletion(ctx, pod)
-
+	//p.notifier(pod)
 	log.G(ctx).Infof("Successfully deleted the container for Pod: %s", pod.Name)
 	return nil
 }
@@ -211,6 +219,12 @@ func (p *SaladCloudProvider) GetPods(ctx context.Context) ([]*corev1.Pod, error)
 
 	}
 	return pods, nil
+}
+
+// NotifyPods is called to set a pod notifier callback function. This should be called before any operations are done
+// within the provider.
+func (p *SaladCloudProvider) NotifyPods(ctx context.Context, notifier func(*corev1.Pod)) {
+	p.notifier = notifier
 }
 
 func (p *SaladCloudProvider) GetContainerLogs(ctx context.Context, namespace, podName, containerName string, opts nodeapi.ContainerLogOpts) (io.ReadCloser, error) {
@@ -317,10 +331,10 @@ func (p *SaladCloudProvider) createAndExecuteContainerGroup(ctx context.Context,
 }
 
 func (p *SaladCloudProvider) startContainerGroup(ctx context.Context, pod *corev1.Pod) error {
-	log.G(ctx).Debugf("Starting container for Pod: %s...", pod.Name)
+	log.G(ctx).Debugf("Starting container for Pod: %s...", pod.ObjectMeta.GetName())
 	resp, err := p.apiClient.ContainerGroupsAPI.StartContainerGroup(p.contextWithAuth(), p.inputVars.OrganizationName, p.inputVars.ProjectName, utils.GetPodName(pod.Namespace, pod.Name, nil)).Execute()
 	if err != nil {
-		log.G(ctx).Errorf("Failed to start container for Pod: %s. Response: %v", pod.Name, resp)
+		log.G(ctx).Errorf("Failed to start container for Pod: %s. Response: %v", pod.ObjectMeta.GetName(), resp)
 		return p.handleStatusCodeError(ctx, resp, err)
 	}
 
@@ -353,7 +367,7 @@ func (p *SaladCloudProvider) updatePodStatus(pod *corev1.Pod) {
 	now := metav1.NewTime(time.Now())
 	pod.ObjectMeta.CreationTimestamp = now
 	pod.Status = corev1.PodStatus{
-		Phase:     corev1.PodRunning,
+		Phase:     corev1.PodPending,
 		StartTime: &now,
 		Conditions: []corev1.PodCondition{
 			{
@@ -376,6 +390,11 @@ func (p *SaladCloudProvider) updatePodStatus(pod *corev1.Pod) {
 			Image:        container.Image,
 			Ready:        true,
 			RestartCount: 0,
+			State: corev1.ContainerState{
+				Running: &corev1.ContainerStateRunning{
+					StartedAt: now,
+				},
+			},
 		})
 	}
 }
