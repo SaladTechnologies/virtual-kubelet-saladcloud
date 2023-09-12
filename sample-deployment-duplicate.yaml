@@ -1,0 +1,98 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: Test-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-deployment
+  template:
+    metadata:
+      labels:
+        app: test-deployment
+      annotations:
+        logging.new_relic.host: HOST_1
+        logging.new_relic.ingestion_key: KEY_1
+        logging.splunk.host: HOST_2
+        logging.splunk.token: TOKEN_2
+        logging.tcp.host: HOST_3
+        logging.tcp.port: "1212"
+        registry_authentication.basic.username: USER_1
+        registry_authentication.basic.password: PASSWORD_1
+        registry_authentication.gcp_gcr.service_key: asdadasdasd
+        registry_authentication.aws_ecr.access_key_id: adasdasd
+        registry_authentication.aws_ecr.secret_access_key: asdasd
+        registry_authentication.docker_hub.username: asdasdad
+        registry_authentication.docker_hub.personal_access_token: asdasdasd
+        country_codes: "al, dz, ad"
+    spec:
+      containers:
+        - name: my-container
+          image: docker.io/heygordian/node-app:latest
+          command:
+            - "/command"
+            - "args 1"
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "1"
+            limits:
+              memory: "1Gi"
+              cpu: "1"
+          env:
+            - name: ENV_VAR_1
+              value: "VALUE_1"
+          ports:
+            - containerPort: 1212
+          livenessProbe:
+            httpGet:
+              path: "/health"
+              port: 121
+              scheme: "http"
+              httpHeaders:
+                - name: "OBJECT_1"
+                  value: "OBJECT_2"
+            tcpSocket:
+              port: 121
+            initialDelaySeconds: 12
+            periodSeconds: 1
+            timeoutSeconds: 1
+            failureThreshold: 1  # Mapping failure_threshold
+          startupProbe:
+            httpGet:
+              path: "/path-1"
+              port: 121
+              scheme: "http"
+              httpHeaders:
+                - name: "KEY"
+                  value: "Value"
+                - name: "KEY2"
+                  value: "Value"
+            tcpSocket:
+              port: 1211
+            initialDelaySeconds: 12
+            periodSeconds: 1
+            timeoutSeconds: 1
+            successThreshold: 1
+            failureThreshold: 1
+          readinessProbe:
+            httpGet:
+              path: "/"
+              port: 80
+          volumeMounts:
+            - name: data-volume
+              mountPath: /data
+      volumes:
+        - name: data-volume
+          emptyDir: {}
+      nodeSelector:
+        kubernetes.io/role: agent
+      tolerations:
+        - key: "virtual-kubelet.io/provider"
+          operator: "Equal"
+          value: "saladCloud"
+          effect: "NoSchedule"
+  restartPolicy: "Always"
+  imagePullSecrets:
+    - name: my-secret

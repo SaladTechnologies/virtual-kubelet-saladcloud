@@ -33,7 +33,17 @@ func GetPodResource(podSpec corev1.PodSpec) (cpu int64, memory int64) {
 	return
 }
 
-func GetPodName(nameSpace, containerGroup string) string {
+func GetPodName(nameSpace, containerGroup string, pod *corev1.Pod) string {
+
+	if nameSpace == "" {
+		nameSpace = pod.ObjectMeta.Namespace
+	}
+	if containerGroup == "" {
+		containerGroup = pod.ObjectMeta.Name
+	}
+	if nameSpace == "" && containerGroup == "" && pod.Spec.Containers[0].Name != "" {
+		return pod.Spec.Containers[0].Name
+	}
 	return "salad-cloud-" + nameSpace + "-" + containerGroup
 }
 
