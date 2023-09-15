@@ -85,7 +85,7 @@ func (p *SaladCloudProvider) getNodeCapacity() corev1.ResourceList {
 func (p *SaladCloudProvider) CreatePod(ctx context.Context, pod *corev1.Pod) error {
 	ctx, span := trace.StartSpan(ctx, "CreatePod")
 	defer span.End()
-	log.G(ctx).Debug("creating a CreatePod")
+	log.G(ctx).Debug("creating a CreatePod", pod.Name)
 
 	createContainerObject := p.createContainersObject(pod)
 	createContainerGroup := p.createContainerGroup(createContainerObject, pod)
@@ -107,7 +107,8 @@ func (p *SaladCloudProvider) CreatePod(ctx context.Context, pod *corev1.Pod) err
 
 	startHttpResponse, err := p.apiClient.ContainerGroupsAPI.StartContainerGroup(p.contextWithAuth(), p.inputVars.OrganizationName, p.inputVars.ProjectName, utils.GetPodName(pod.Namespace, pod.Name, nil)).Execute()
 	if err != nil {
-		log.G(ctx).Errorf("Error when Starting the container ", startHttpResponse)
+		log.G(ctx).Errorf("Error when calling `ContainerGroupsAPI.CreateContainerGroupModel`", startHttpResponse)
+		p.DeletePod(ctx, pod)
 		return err
 	}
 
@@ -229,7 +230,7 @@ func (p *SaladCloudProvider) GetPodStatus(ctx context.Context, namespace string,
 	}
 
 	startTime := metav1.NewTime(containerGroup.CreateTime)
-
+	fmt.Fprintf(os.Stdout, "Response from `ContainerGroupsAPI.GetPodStatus`", namespace, name, containerGroup.CurrentState.Status)
 	return &corev1.PodStatus{
 		Phase:     utils.GetPodPhaseFromContainerGroupState(containerGroup.CurrentState),
 		StartTime: &startTime,
@@ -251,7 +252,7 @@ func (p *SaladCloudProvider) GetPods(ctx context.Context) ([]*corev1.Pod, error)
 		log.G(ctx).Errorf("Error when list ContainerGroupsAPI.ListContainerGroups ", r)
 		return nil, err
 	}
-	fmt.Fprintf(os.Stdout, "Response from `ContainerGroupsAPI.GetContainerGroup`: %v\n", resp)
+	fmt.Print(os.Stdout, "Response from `ContainerGroupsAPI.GetContainerGroup`: %v\n", resp)
 	pods := make([]*corev1.Pod, 0)
 	for _, containerGroup := range resp.GetItems() {
 		startTime := metav1.NewTime(containerGroup.CreateTime)
