@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"github.com/SaladTechnologies/virtual-kubelet-saladcloud/internal/models"
 	"github.com/SaladTechnologies/virtual-kubelet-saladcloud/internal/utils"
 	saladclient "github.com/lucklypriyansh-2/salad-client"
@@ -16,7 +15,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"os"
 	"strings"
 	"time"
 )
@@ -232,7 +230,6 @@ func (p *SaladCloudProvider) GetPodStatus(ctx context.Context, namespace string,
 	}
 
 	startTime := metav1.NewTime(containerGroup.CreateTime)
-	fmt.Fprintf(os.Stdout, "Response from `ContainerGroupsAPI.GetPodStatus`", namespace, name, containerGroup.CurrentState.Status)
 	return &corev1.PodStatus{
 		Phase:     utils.GetPodPhaseFromContainerGroupState(containerGroup.CurrentState),
 		StartTime: &startTime,
