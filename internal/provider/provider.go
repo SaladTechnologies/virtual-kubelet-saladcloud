@@ -30,7 +30,6 @@ type SaladCloudProvider struct {
 	operatingSystem string
 	apiClient       *saladclient.APIClient
 	countryCodes    []saladclient.CountryCode
-	notifier        func(*corev1.Pod)
 }
 
 const (
@@ -252,7 +251,6 @@ func (p *SaladCloudProvider) GetPods(ctx context.Context) ([]*corev1.Pod, error)
 		log.G(ctx).Errorf("Error when list ContainerGroupsAPI.ListContainerGroups ", r)
 		return nil, err
 	}
-	fmt.Print(os.Stdout, "Response from `ContainerGroupsAPI.GetContainerGroup`: %v\n", resp)
 	pods := make([]*corev1.Pod, 0)
 	for _, containerGroup := range resp.GetItems() {
 		startTime := metav1.NewTime(containerGroup.CreateTime)
