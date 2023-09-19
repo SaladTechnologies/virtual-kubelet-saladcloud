@@ -107,7 +107,10 @@ func (p *SaladCloudProvider) CreatePod(ctx context.Context, pod *corev1.Pod) err
 	startHttpResponse, err := p.apiClient.ContainerGroupsAPI.StartContainerGroup(p.contextWithAuth(), p.inputVars.OrganizationName, p.inputVars.ProjectName, utils.GetPodName(pod.Namespace, pod.Name, nil)).Execute()
 	if err != nil {
 		log.G(ctx).Errorf("Error when calling `ContainerGroupsAPI.CreateContainerGroupModel`", startHttpResponse)
-		p.DeletePod(ctx, pod)
+		err := p.DeletePod(ctx, pod)
+		if err != nil {
+			return err
+		}
 		return err
 	}
 
