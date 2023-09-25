@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: demo-pod-8
+spec:
+  containers:
+    - name: my-container
+      image: docker.io/heygordian/node-app:latest
+      resources:
+        requests:
+          memory: "1Gi"
+          cpu: "1"
+        limits:
+          memory: "1Gi"
+          cpu: "1"
+  nodeSelector:
+    kubernetes.io/role: agent
+  tolerations:
+    - key: "virtual-kubelet.io/provider"
+      operator: "Equal"
+      value: "saladCloud"
+      effect: "NoSchedule"
