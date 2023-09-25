@@ -329,6 +329,7 @@ func (p *SaladCloudProvider) getContainerEnvironment(podMetadata metav1.ObjectMe
 			}
 		} else {
 			// TODO Handle environment variable from source
+			log.G(context.Background()).Debugf("Environment variable support from %s is not yet implemented", env.ValueFrom.String())
 		}
 	}
 	return envMap
