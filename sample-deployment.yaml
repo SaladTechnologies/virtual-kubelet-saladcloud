@@ -14,6 +14,11 @@ spec:
     spec:
       containers:
         - name: my-container
+          env:
+            - name: test
+              value: test
+            - name: another
+              value: env
           image: docker.io/heygordian/node-app:latest
           resources:
             requests:

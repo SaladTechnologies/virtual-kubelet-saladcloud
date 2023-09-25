@@ -306,32 +306,49 @@ func (p *SaladCloudProvider) PortForward(ctx context.Context, namespace, pod str
 	return nil
 }
 
+func (p *SaladCloudProvider) getContainerEnvironment(podMetadata metav1.ObjectMeta, container corev1.Container) map[string]string {
+	marshallerObjectMetadata, err := json.Marshal(podMetadata)
+	if err != nil {
+		log.G(context.Background()).Errorf("Failed Marshalling ", err)
+	}
+	envMap := make(map[string]string)
+	if marshallerObjectMetadata != nil {
+		envMap["POD_METADATA_YAM"] = string(marshallerObjectMetadata)
+	}
+	for _, env := range container.Env {
+		if env.ValueFrom == nil {
+			ignore := false
+			for _, ignoreEnv := range k8sDefaultEnvVars {
+				if ignoreEnv == env.Name {
+					ignore = true
+					break
+				}
+			}
+			if !ignore {
+				envMap[env.Name] = env.Value
+			}
+		} else {
+			// TODO Handle environment variable from source
+		}
+	}
+	return envMap
+}
+
 func (p *SaladCloudProvider) createContainersObject(pod *corev1.Pod) []saladclient.CreateContainer {
-
 	cpu, memory := utils.GetPodResource(pod.Spec)
-
 	creteContainersArray := make([]saladclient.CreateContainer, 0)
-	for _, container := range pod.Spec.Containers {
 
+	for _, container := range pod.Spec.Containers {
 		containerResourceRequirement := saladclient.NewContainerResourceRequirements(int32(cpu), int32(memory))
 		createContainer := saladclient.NewCreateContainer(container.Image, *containerResourceRequirement)
-
-		marshallerObjectMetadata, err := json.Marshal(pod.ObjectMeta)
-		if err != nil {
-			log.G(context.Background()).Errorf("Failed Marshalling ", err)
-		}
-
-		var mapString = make(map[string]string)
-		if marshallerObjectMetadata != nil {
-			mapString["POD_METADATA_YAM"] = string(marshallerObjectMetadata)
-		}
-		createContainer.SetEnvironmentVariables(mapString)
+		createContainer.SetEnvironmentVariables(p.getContainerEnvironment(pod.ObjectMeta, container))
 		if container.Command != nil {
 			createContainer.SetCommand(container.Command)
 		}
 		creteContainersArray = append(creteContainersArray, *createContainer)
 		// TODO Add support for container Registry auth
 	}
+	
 	return creteContainersArray
 
 }
