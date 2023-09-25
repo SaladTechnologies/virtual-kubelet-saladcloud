@@ -348,7 +348,7 @@ func (p *SaladCloudProvider) createContainersObject(pod *corev1.Pod) []saladclie
 		creteContainersArray = append(creteContainersArray, *createContainer)
 		// TODO Add support for container Registry auth
 	}
-	
+
 	return creteContainersArray
 
 }
