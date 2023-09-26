@@ -336,20 +336,31 @@ func (p *SaladCloudProvider) getContainerEnvironment(podMetadata metav1.ObjectMe
 }
 
 func (p *SaladCloudProvider) createContainersObject(pod *corev1.Pod) []saladclient.CreateContainer {
-	cpu, memory := utils.GetPodResource(pod.Spec)
-	creteContainersArray := make([]saladclient.CreateContainer, 0)
 
+	cpu, memory := utils.GetPodResource(pod.Spec)
+
+	creteContainersArray := make([]saladclient.CreateContainer, 0)
 	for _, container := range pod.Spec.Containers {
+
 		containerResourceRequirement := saladclient.NewContainerResourceRequirements(int32(cpu), int32(memory))
 		createContainer := saladclient.NewCreateContainer(container.Image, *containerResourceRequirement)
-		createContainer.SetEnvironmentVariables(p.getContainerEnvironment(pod.ObjectMeta, container))
+
+		marshallerObjectMetadata, err := json.Marshal(pod.ObjectMeta)
+		if err != nil {
+			log.G(context.Background()).Errorf("Failed Marshalling ", err)
+		}
+
+		var mapString = make(map[string]string)
+		if marshallerObjectMetadata != nil {
+			mapString["POD_METADATA_YAM"] = string(marshallerObjectMetadata)
+		}
+		createContainer.SetEnvironmentVariables(mapString)
 		if container.Command != nil {
 			createContainer.SetCommand(container.Command)
 		}
 		creteContainersArray = append(creteContainersArray, *createContainer)
 		// TODO Add support for container Registry auth
 	}
-
 	return creteContainersArray
 
 }
