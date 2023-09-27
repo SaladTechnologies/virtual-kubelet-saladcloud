@@ -355,9 +355,54 @@ func (p *SaladCloudProvider) createContainerGroup(createContainerList []saladcli
 	for _, container := range createContainerList {
 		createContainerGroupRequest := *saladclient.NewCreateContainerGroup(utils.GetPodName(pod.Namespace, pod.Name, pod), container, "always", 1)
 		createContainerGroupRequest.SetCountryCodes(countryCodesEnum)
+		readinessProbe, err := p.getWorkloadContainerProbeFrom(pod.Spec.Containers[0].ReadinessProbe)
+		if err == nil {
+			createContainerGroupRequest.ReadinessProbe = *readinessProbe
+		} else {
+			log.G(context.Background()).Errorf("Failed to get readinessProbe ", err)
+		}
+		livenessProbe, err := p.getWorkloadContainerProbeFrom(pod.Spec.Containers[0].LivenessProbe)
+		if err == nil {
+			createContainerGroupRequest.LivenessProbe = *livenessProbe
+		} else {
+			log.G(context.Background()).Errorf("Failed to get livenessProbe ", err)
+		}
+		startupProbe, err := p.getWorkloadContainerProbeFrom(pod.Spec.Containers[0].StartupProbe)
+		if err == nil {
+			createContainerGroupRequest.StartupProbe = *startupProbe
+		} else {
+			log.G(context.Background()).Errorf("Failed to get startupProbe ", err)
+		}
 		createContainerGroups = append(createContainerGroups, createContainerGroupRequest)
 	}
-
 	return createContainerGroups
 
+}
+
+func (p *SaladCloudProvider) getWorkloadContainerProbeFrom(k8sProbe *corev1.Probe) (*saladclient.NullableContainerGroupProbe, error) {
+	if k8sProbe == nil || *k8sProbe == (corev1.Probe{}) {
+		return nil, nil
+	}
+	if k8sProbe.GRPC != nil {
+		log.G(context.Background()).Errorf("GRPC Probe is not supported")
+		return nil, nil
+	}
+	probe := saladclient.NewContainerGroupProbe(k8sProbe.InitialDelaySeconds, k8sProbe.PeriodSeconds, k8sProbe.TimeoutSeconds, k8sProbe.SuccessThreshold, k8sProbe.FailureThreshold)
+	if k8sProbe.HTTPGet != nil {
+		httpProbe := saladclient.NewContainerGroupProbeHttp(k8sProbe.HTTPGet.Path, int32(k8sProbe.HTTPGet.Port.IntValue()))
+		for _, header := range k8sProbe.HTTPGet.HTTPHeaders {
+			httpProbe.Headers = append(httpProbe.Headers, saladclient.HttpHeadersInner{Name: header.Name, Value: header.Value})
+		}
+		probe.SetHttp(*httpProbe)
+	}
+
+	if k8sProbe.TCPSocket != nil {
+		tcpProbe := saladclient.NewContainerGroupProbeTcp(int32(k8sProbe.TCPSocket.Port.IntValue()))
+		probe.SetTcp(*tcpProbe)
+	}
+	if k8sProbe.Exec != nil {
+		exec := saladclient.NewContainerGroupProbeExec(k8sProbe.Exec.Command)
+		probe.SetExec(*exec)
+	}
+	return saladclient.NewNullableContainerGroupProbe(probe), nil
 }
