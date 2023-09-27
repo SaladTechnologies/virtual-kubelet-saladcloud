@@ -383,11 +383,11 @@ func (p *SaladCloudProvider) getWorkloadContainerProbeFrom(k8sProbe *corev1.Prob
 	if k8sProbe == nil || *k8sProbe == (corev1.Probe{}) {
 		return nil, nil
 	}
-	if k8sProbe.GRPC != nil {
-		log.G(context.Background()).Errorf("GRPC Probe is not supported")
-		return nil, nil
-	}
 	probe := saladclient.NewContainerGroupProbe(k8sProbe.InitialDelaySeconds, k8sProbe.PeriodSeconds, k8sProbe.TimeoutSeconds, k8sProbe.SuccessThreshold, k8sProbe.FailureThreshold)
+	if k8sProbe.GRPC != nil {
+		grpcProbe := saladclient.NewContainerGroupProbeGrpc(*k8sProbe.GRPC.Service, k8sProbe.GRPC.Port)
+		probe.SetGrpc(*grpcProbe)
+	}
 	if k8sProbe.HTTPGet != nil {
 		httpProbe := saladclient.NewContainerGroupProbeHttp(k8sProbe.HTTPGet.Path, int32(k8sProbe.HTTPGet.Port.IntValue()))
 		for _, header := range k8sProbe.HTTPGet.HTTPHeaders {
