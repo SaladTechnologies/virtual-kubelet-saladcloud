@@ -1,0 +1,4 @@
+apiVersion: v2
+description: a Helm chart to install virtual kubelet with Azure provider in an AKS cluster.
+name: salad-virtual-kubelet
+version: 1.0.0
