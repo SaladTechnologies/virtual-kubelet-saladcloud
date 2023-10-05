@@ -362,19 +362,19 @@ func (p *SaladCloudProvider) createContainerGroup(createContainerList []saladcli
 	for _, container := range createContainerList {
 		createContainerGroupRequest := *saladclient.NewCreateContainerGroup(utils.GetPodName(pod.Namespace, pod.Name, pod), container, "always", 1)
 		readinessProbe, err := p.getWorkloadContainerProbeFrom(pod.Spec.Containers[0].ReadinessProbe)
-		if err == nil {
+		if err == nil && readinessProbe != nil {
 			createContainerGroupRequest.ReadinessProbe = *readinessProbe
 		} else {
 			log.G(context.Background()).Errorf("Failed to get readinessProbe ", err)
 		}
 		livenessProbe, err := p.getWorkloadContainerProbeFrom(pod.Spec.Containers[0].LivenessProbe)
-		if err == nil {
+		if err == nil && livenessProbe != nil {
 			createContainerGroupRequest.LivenessProbe = *livenessProbe
 		} else {
 			log.G(context.Background()).Errorf("Failed to get livenessProbe ", err)
 		}
 		startupProbe, err := p.getWorkloadContainerProbeFrom(pod.Spec.Containers[0].StartupProbe)
-		if err == nil {
+		if err == nil && startupProbe != nil {
 			createContainerGroupRequest.StartupProbe = *startupProbe
 		} else {
 			log.G(context.Background()).Errorf("Failed to get startupProbe ", err)
@@ -388,7 +388,7 @@ func (p *SaladCloudProvider) createContainerGroup(createContainerList []saladcli
 		networking, err := p.getNetworking(pod)
 		if err != nil {
 			log.G(context.Background()).Errorf("Failed to get networking ", err)
-		} else {
+		} else if networking != nil {
 			createContainerGroupRequest.SetNetworking(*networking)
 		}
 		restartPolicy, err := p.getRestartPolicy(pod)
