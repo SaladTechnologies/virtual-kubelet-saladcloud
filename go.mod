@@ -3,7 +3,7 @@ module github.com/SaladTechnologies/virtual-kubelet-saladcloud
 go 1.20
 
 require (
-	github.com/lucklypriyansh-2/salad-client v0.0.0-20231005112118-e2e44b2b9380
+	github.com/lucklypriyansh-2/salad-client v0.0.0-20231005114315-47f7f0403e30
 	github.com/prometheus/client_model v0.4.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/virtual-kubelet/virtual-kubelet v1.10.0

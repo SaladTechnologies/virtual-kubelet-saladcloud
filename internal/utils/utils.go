@@ -50,7 +50,7 @@ func GetPodName(nameSpace, containerGroup string, pod *corev1.Pod) string {
 func GetPodPhaseFromContainerGroupState(containerGroupState saladclient.ContainerGroupState) corev1.PodPhase {
 
 	switch containerGroupState.Status {
-	case saladclient.CONTAINER_GROUP_STATUS_PENDING:
+	case saladclient.CONTAINERGROUPSTATUS_PENDING:
 		return corev1.PodPending
 	case saladclient.CONTAINERGROUPSTATUS_RUNNING:
 		{
