@@ -338,12 +338,9 @@ func (p *SaladCloudProvider) getContainerEnvironment(podMetadata metav1.ObjectMe
 }
 
 func (p *SaladCloudProvider) createContainersObject(pod *corev1.Pod) []saladclient.CreateContainer {
-
 	cpu, memory := utils.GetPodResource(pod.Spec)
-
 	creteContainersArray := make([]saladclient.CreateContainer, 0)
 	for _, container := range pod.Spec.Containers {
-
 		containerResourceRequirement := saladclient.NewContainerResourceRequirements(int32(cpu), int32(memory))
 		createContainer := saladclient.NewCreateContainer(container.Image, *containerResourceRequirement)
 
@@ -351,36 +348,19 @@ func (p *SaladCloudProvider) createContainersObject(pod *corev1.Pod) []saladclie
 		if container.Command != nil {
 			createContainer.SetCommand(container.Command)
 		}
-		gpuClass, err := p.getGPUClasses(pod)
-		if err == nil && gpuClass != nil {
-			createContainer.Resources.GpuClass = *gpuClass
+		gpuClasses, err := p.getGPUClasses(pod)
+		if err == nil && gpuClasses != nil && len(gpuClasses) > 0 {
+			createContainer.Resources.SetGpuClasses(gpuClasses)
 		}
 		creteContainersArray = append(creteContainersArray, *createContainer)
-		// TODO Add support for container Registry auth
 	}
 	return creteContainersArray
-
 }
 
 func (p *SaladCloudProvider) createContainerGroup(createContainerList []saladclient.CreateContainer, pod *corev1.Pod) []saladclient.CreateContainerGroup {
-
 	createContainerGroups := make([]saladclient.CreateContainerGroup, 0)
-
-	if pod.ObjectMeta.GetAnnotations()["countryCodes"] == "" {
-		pod.ObjectMeta.SetAnnotations(map[string]string{
-			"countryCodes": "US",
-		})
-	}
-
-	var countryCodesEnum []saladclient.CountryCode
-	for _, countryCode := range strings.Split(pod.ObjectMeta.GetAnnotations()["countryCodes"], ",") {
-		countryCodeEnum := saladclient.CountryCode(countryCode)
-		countryCodesEnum = append(countryCodesEnum, countryCodeEnum)
-	}
-
 	for _, container := range createContainerList {
 		createContainerGroupRequest := *saladclient.NewCreateContainerGroup(utils.GetPodName(pod.Namespace, pod.Name, pod), container, "always", 1)
-		createContainerGroupRequest.SetCountryCodes(countryCodesEnum)
 		readinessProbe, err := p.getWorkloadContainerProbeFrom(pod.Spec.Containers[0].ReadinessProbe)
 		if err == nil {
 			createContainerGroupRequest.ReadinessProbe = *readinessProbe
@@ -451,34 +431,45 @@ func (p *SaladCloudProvider) getWorkloadContainerProbeFrom(k8sProbe *corev1.Prob
 	return saladclient.NewNullableContainerGroupProbe(probe), nil
 }
 
-func (p *SaladCloudProvider) getGPUClasses(pod *corev1.Pod) (*saladclient.NullableString, error) {
-	gpuClasses, _, err := p.apiClient.OrganizationDataAPI.ListGpuClasses(context.Background(), p.inputVars.OrganizationName).Execute()
-	if err != nil {
-		log.G(context.Background()).Errorf("Failed to get gpuClasses ", err)
-		return nil, err
-	}
-	gpuRequested, ok := pod.Annotations["salad.com/gpu-classes"]
+func (p *SaladCloudProvider) getGPUClasses(pod *corev1.Pod) ([]string, error) {
+	gpuRequestedString, ok := pod.ObjectMeta.Annotations["salad.com/gpu-classes"]
 	if !ok {
 		return nil, nil
 	}
-	gpuRequestedIsUUID := false
-	_, err = uuid.Parse(gpuRequested)
-	if err == nil {
-		gpuRequestedIsUUID = true
-	}
-	for _, gpu := range gpuClasses.Items {
-		if !gpuRequestedIsUUID {
-			if gpu.Name == gpuRequested {
-				return saladclient.NewNullableString(&gpu.Name), nil
+	gpuRequested := strings.Split(gpuRequestedString, ",")
+	saladClientGpuIds := make([]string, 0)
+	var gpuClasses *saladclient.GpuClassesList = nil
+
+	for _, gpu := range gpuRequested {
+		gpuCleaned := strings.TrimSpace(strings.ToLower(gpu))
+		_, uuidErr := uuid.Parse(gpuCleaned)
+		if uuidErr == nil {
+			saladClientGpuIds = append(saladClientGpuIds, gpuCleaned)
+		} else {
+			if gpuClasses == nil {
+				classes, _, err := p.apiClient.OrganizationDataAPI.ListGpuClasses(context.Background(), p.inputVars.OrganizationName).Execute()
+				if err != nil {
+					log.G(context.Background()).Errorf("Failed to get gpuClasses ", err)
+					return nil, err
+				} else {
+					gpuClasses = classes
+				}
+			}
+			for _, gpuClass := range gpuClasses.Items {
+				if strings.TrimSpace(strings.ToLower(gpuClass.Name)) == gpuCleaned {
+					saladClientGpuIds = append(saladClientGpuIds, gpuClass.Id)
+					break
+				}
 			}
 		}
 	}
-	return nil, nil
+	return saladClientGpuIds, nil
 }
 
 func (p *SaladCloudProvider) getCountryCodes(pod *corev1.Pod) ([]saladclient.CountryCode, error) {
 	countryCodes := make([]saladclient.CountryCode, 0)
-	countryCodesFromAnnotation, ok := pod.Annotations["salad.com/country-codes"]
+	countryCodes = append(countryCodes, "US")
+	countryCodesFromAnnotation, ok := pod.ObjectMeta.Annotations["salad.com/country-codes"]
 	if !ok {
 		return countryCodes, nil
 	}
@@ -494,9 +485,9 @@ func (p *SaladCloudProvider) getCountryCodes(pod *corev1.Pod) ([]saladclient.Cou
 }
 
 func (p *SaladCloudProvider) getNetworking(pod *corev1.Pod) (*saladclient.CreateContainerGroupNetworking, error) {
-	protocol, hasProtocol := pod.Annotations["salad.com/networking-protocol"]
-	port, hasPort := pod.Annotations["salad.com/networking-port"]
-	auth, hasAuth := pod.Annotations["salad.com/networking-auth"]
+	protocol, hasProtocol := pod.ObjectMeta.Annotations["salad.com/networking-protocol"]
+	port, hasPort := pod.ObjectMeta.Annotations["salad.com/networking-port"]
+	auth, hasAuth := pod.ObjectMeta.Annotations["salad.com/networking-auth"]
 	if !hasProtocol || !hasPort || !hasAuth {
 		return nil, nil
 	}

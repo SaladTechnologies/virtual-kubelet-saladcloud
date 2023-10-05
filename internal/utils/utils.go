@@ -19,7 +19,7 @@ func roundUpToNearest(value int64, list []int64) int64 {
 func GetPodResource(podSpec corev1.PodSpec) (cpu int64, memory int64) {
 	allowedCPUValues := []int64{1, 2, 3, 4, 6, 8, 12, 16}
 
-	allowedMemoryValues := []int64{1024, 2048, 3, 4, 5, 6, 12} // in GB
+	allowedMemoryValues := []int64{1024, 2048, 3, 4, 5, 6, 12, 16, 24, 30} // in GB
 
 	for _, container := range podSpec.Containers {
 		// Convert milliCPU to cores and round to nearest value in the list
@@ -50,7 +50,7 @@ func GetPodName(nameSpace, containerGroup string, pod *corev1.Pod) string {
 func GetPodPhaseFromContainerGroupState(containerGroupState saladclient.ContainerGroupState) corev1.PodPhase {
 
 	switch containerGroupState.Status {
-	case saladclient.CONTAINERGROUPSTATUS_PENDING:
+	case saladclient.CONTAINER_GROUP_STATUS_PENDING:
 		return corev1.PodPending
 	case saladclient.CONTAINERGROUPSTATUS_RUNNING:
 		{
