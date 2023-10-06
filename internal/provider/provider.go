@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"github.com/SaladTechnologies/virtual-kubelet-saladcloud/internal/models"
 	"github.com/SaladTechnologies/virtual-kubelet-saladcloud/internal/utils"
+	"github.com/google/uuid"
 	saladclient "github.com/lucklypriyansh-2/salad-client"
+	"github.com/pkg/errors"
 	dto "github.com/prometheus/client_model/go"
 	"github.com/virtual-kubelet/virtual-kubelet/log"
 	nodeapi "github.com/virtual-kubelet/virtual-kubelet/node/api"
@@ -15,6 +17,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -83,7 +86,6 @@ func (p *SaladCloudProvider) CreatePod(ctx context.Context, pod *corev1.Pod) err
 	ctx, span := trace.StartSpan(ctx, "CreatePod")
 	defer span.End()
 	log.G(ctx).Debug("creating a CreatePod", pod.Name)
-
 	createContainerObject := p.createContainersObject(pod)
 	createContainerGroup := p.createContainerGroup(createContainerObject, pod)
 
@@ -336,12 +338,9 @@ func (p *SaladCloudProvider) getContainerEnvironment(podMetadata metav1.ObjectMe
 }
 
 func (p *SaladCloudProvider) createContainersObject(pod *corev1.Pod) []saladclient.CreateContainer {
-
 	cpu, memory := utils.GetPodResource(pod.Spec)
-
 	creteContainersArray := make([]saladclient.CreateContainer, 0)
 	for _, container := range pod.Spec.Containers {
-
 		containerResourceRequirement := saladclient.NewContainerResourceRequirements(int32(cpu), int32(memory))
 		createContainer := saladclient.NewCreateContainer(container.Image, *containerResourceRequirement)
 
@@ -349,49 +348,54 @@ func (p *SaladCloudProvider) createContainersObject(pod *corev1.Pod) []saladclie
 		if container.Command != nil {
 			createContainer.SetCommand(container.Command)
 		}
+		gpuClasses, err := p.getGPUClasses(pod)
+		if err == nil && gpuClasses != nil && len(gpuClasses) > 0 {
+			createContainer.Resources.SetGpuClasses(gpuClasses)
+		}
 		creteContainersArray = append(creteContainersArray, *createContainer)
-		// TODO Add support for container Registry auth
 	}
 	return creteContainersArray
-
 }
 
 func (p *SaladCloudProvider) createContainerGroup(createContainerList []saladclient.CreateContainer, pod *corev1.Pod) []saladclient.CreateContainerGroup {
-
 	createContainerGroups := make([]saladclient.CreateContainerGroup, 0)
-
-	if pod.ObjectMeta.GetAnnotations()["countryCodes"] == "" {
-		pod.ObjectMeta.SetAnnotations(map[string]string{
-			"countryCodes": "US",
-		})
-	}
-
-	var countryCodesEnum []saladclient.CountryCode
-	for _, countryCode := range strings.Split(pod.ObjectMeta.GetAnnotations()["countryCodes"], ",") {
-		countryCodeEnum := saladclient.CountryCode(countryCode)
-		countryCodesEnum = append(countryCodesEnum, countryCodeEnum)
-	}
-
 	for _, container := range createContainerList {
 		createContainerGroupRequest := *saladclient.NewCreateContainerGroup(utils.GetPodName(pod.Namespace, pod.Name, pod), container, "always", 1)
-		createContainerGroupRequest.SetCountryCodes(countryCodesEnum)
 		readinessProbe, err := p.getWorkloadContainerProbeFrom(pod.Spec.Containers[0].ReadinessProbe)
-		if err == nil {
+		if err == nil && readinessProbe != nil {
 			createContainerGroupRequest.ReadinessProbe = *readinessProbe
 		} else {
 			log.G(context.Background()).Errorf("Failed to get readinessProbe ", err)
 		}
 		livenessProbe, err := p.getWorkloadContainerProbeFrom(pod.Spec.Containers[0].LivenessProbe)
-		if err == nil {
+		if err == nil && livenessProbe != nil {
 			createContainerGroupRequest.LivenessProbe = *livenessProbe
 		} else {
 			log.G(context.Background()).Errorf("Failed to get livenessProbe ", err)
 		}
 		startupProbe, err := p.getWorkloadContainerProbeFrom(pod.Spec.Containers[0].StartupProbe)
-		if err == nil {
+		if err == nil && startupProbe != nil {
 			createContainerGroupRequest.StartupProbe = *startupProbe
 		} else {
 			log.G(context.Background()).Errorf("Failed to get startupProbe ", err)
+		}
+		countryCodes, err := p.getCountryCodes(pod)
+		if err != nil {
+			log.G(context.Background()).Errorf("Failed to get countryCodes ", err)
+		} else {
+			createContainerGroupRequest.SetCountryCodes(countryCodes)
+		}
+		networking, err := p.getNetworking(pod)
+		if err != nil {
+			log.G(context.Background()).Errorf("Failed to get networking ", err)
+		} else if networking != nil {
+			createContainerGroupRequest.SetNetworking(*networking)
+		}
+		restartPolicy, err := p.getRestartPolicy(pod)
+		if err != nil {
+			log.G(context.Background()).Errorf("Failed to get restartPolicy ", err)
+		} else {
+			createContainerGroupRequest.SetRestartPolicy(*restartPolicy)
 		}
 		createContainerGroups = append(createContainerGroups, createContainerGroupRequest)
 	}
@@ -425,4 +429,93 @@ func (p *SaladCloudProvider) getWorkloadContainerProbeFrom(k8sProbe *corev1.Prob
 		probe.SetExec(*exec)
 	}
 	return saladclient.NewNullableContainerGroupProbe(probe), nil
+}
+
+func (p *SaladCloudProvider) getGPUClasses(pod *corev1.Pod) ([]string, error) {
+	gpuRequestedString, ok := pod.ObjectMeta.Annotations["salad.com/gpu-classes"]
+	if !ok {
+		return nil, nil
+	}
+	gpuRequested := strings.Split(gpuRequestedString, ",")
+	saladClientGpuIds := make([]string, 0)
+	var gpuClasses *saladclient.GpuClassesList = nil
+
+	for _, gpu := range gpuRequested {
+		gpuCleaned := strings.TrimSpace(strings.ToLower(gpu))
+		_, uuidErr := uuid.Parse(gpuCleaned)
+		if uuidErr == nil {
+			saladClientGpuIds = append(saladClientGpuIds, gpuCleaned)
+		} else {
+			if gpuClasses == nil {
+				classes, _, err := p.apiClient.OrganizationDataAPI.ListGpuClasses(context.Background(), p.inputVars.OrganizationName).Execute()
+				if err != nil {
+					log.G(context.Background()).Errorf("Failed to get gpuClasses ", err)
+					return nil, err
+				} else {
+					gpuClasses = classes
+				}
+			}
+			for _, gpuClass := range gpuClasses.Items {
+				if strings.TrimSpace(strings.ToLower(gpuClass.Name)) == gpuCleaned {
+					saladClientGpuIds = append(saladClientGpuIds, gpuClass.Id)
+					break
+				}
+			}
+		}
+	}
+	return saladClientGpuIds, nil
+}
+
+func (p *SaladCloudProvider) getCountryCodes(pod *corev1.Pod) ([]saladclient.CountryCode, error) {
+	countryCodes := make([]saladclient.CountryCode, 0)
+	countryCodes = append(countryCodes, "US")
+	countryCodesFromAnnotation, ok := pod.ObjectMeta.Annotations["salad.com/country-codes"]
+	if !ok {
+		return countryCodes, nil
+	}
+	codes := strings.Split(countryCodesFromAnnotation, ",")
+	for _, code := range codes {
+		cc, err := saladclient.NewCountryCodeFromValue(code)
+		if err != nil {
+			return []saladclient.CountryCode{}, errors.WithMessage(err, "Invalid country code provided: "+code)
+		}
+		countryCodes = append(countryCodes, *cc)
+	}
+	return countryCodes, nil
+}
+
+func (p *SaladCloudProvider) getNetworking(pod *corev1.Pod) (*saladclient.CreateContainerGroupNetworking, error) {
+	protocol, hasProtocol := pod.ObjectMeta.Annotations["salad.com/networking-protocol"]
+	port, hasPort := pod.ObjectMeta.Annotations["salad.com/networking-port"]
+	auth, hasAuth := pod.ObjectMeta.Annotations["salad.com/networking-auth"]
+	if !hasProtocol || !hasPort || !hasAuth {
+		return nil, nil
+	}
+	networkingProtocol, err := saladclient.NewContainerNetworkingProtocolFromValue(protocol)
+	if err != nil {
+		return nil, err
+	}
+	parsedPortInt, err := strconv.Atoi(port)
+	if err != nil {
+		return nil, err
+	}
+	parsedAuth := false
+	if strings.ToLower(auth) == "true" {
+		parsedAuth = true
+	}
+	return saladclient.NewCreateContainerGroupNetworking(*networkingProtocol, int32(parsedPortInt), parsedAuth), nil
+}
+
+func (p *SaladCloudProvider) getRestartPolicy(pod *corev1.Pod) (*saladclient.ContainerRestartPolicy, error) {
+	restartPolicy := "never"
+	if pod.Spec.RestartPolicy == corev1.RestartPolicyAlways {
+		restartPolicy = "always"
+	}
+	if pod.Spec.RestartPolicy == corev1.RestartPolicyOnFailure {
+		restartPolicy = "on_failure"
+	}
+	if pod.Spec.RestartPolicy == corev1.RestartPolicyNever {
+		restartPolicy = "never"
+	}
+	return saladclient.NewContainerRestartPolicyFromValue(restartPolicy)
 }
