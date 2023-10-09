@@ -352,6 +352,10 @@ func (p *SaladCloudProvider) createContainersObject(pod *corev1.Pod) []saladclie
 		if err == nil && gpuClasses != nil && len(gpuClasses) > 0 {
 			createContainer.Resources.SetGpuClasses(gpuClasses)
 		}
+		logging := p.getContainerLogging(pod)
+		if logging != nil {
+			createContainer.Logging.Set(logging)
+		}
 		creteContainersArray = append(creteContainersArray, *createContainer)
 	}
 	return creteContainersArray
@@ -521,4 +525,42 @@ func (p *SaladCloudProvider) getRestartPolicy(pod *corev1.Pod) (*saladclient.Con
 		restartPolicy = "never"
 	}
 	return saladclient.NewContainerRestartPolicyFromValue(restartPolicy)
+}
+
+func (p *SaladCloudProvider) getContainerLogging(pod *corev1.Pod) *saladclient.ContainerLogging {
+	newRelicHost, hasRelicHost := pod.ObjectMeta.Annotations["salad.com/logging-new-relic-host"]
+	newRelicIngestionKey, hasRelicIngestionKey := pod.ObjectMeta.Annotations["salad.com/logging-new-relic-ingestion-key"]
+
+	splunkHost, hasSplunkHost := pod.ObjectMeta.Annotations["salad.com/logging-splunk-host"]
+	splunkToken, hasSplunkToken := pod.ObjectMeta.Annotations["salad.com/logging-splunk-token"]
+
+	tcpHost, hasTCPHost := pod.ObjectMeta.Annotations["salad.com/logging-tcp-host"]
+	tcpPort, hasTCPPort := pod.ObjectMeta.Annotations["salad.com/logging-tcp-port"]
+
+	if !hasRelicHost && !hasRelicIngestionKey && !hasSplunkHost && !hasSplunkToken && !hasTCPHost && !hasTCPPort {
+		return nil
+	}
+
+	containerLogging := saladclient.NewContainerLogging()
+
+	if hasRelicHost && hasRelicIngestionKey {
+		newRelic := saladclient.NewContainerLoggingNewRelic(newRelicHost, newRelicIngestionKey)
+		containerLogging.SetNewRelic(*newRelic)
+	}
+
+	if hasSplunkHost && hasSplunkToken {
+		newSplunk := saladclient.NewContainerLoggingSplunk(splunkHost, splunkToken)
+		containerLogging.SetSplunk(*newSplunk)
+	}
+
+	if hasTCPHost && hasTCPPort {
+		tcpPortInt, err := strconv.Atoi(tcpPort)
+		if err != nil {
+			log.G(context.Background()).Errorf("Failed to convert TCP port for logging")
+		} else {
+			newTCP := saladclient.NewContainerLoggingTcp(tcpHost, int32(tcpPortInt))
+			containerLogging.SetTcp(*newTCP)
+		}
+	}
+	return containerLogging
 }
