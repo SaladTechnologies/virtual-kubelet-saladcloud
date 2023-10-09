@@ -481,6 +481,9 @@ func (p *SaladCloudProvider) getCountryCodes(pod *corev1.Pod) ([]saladclient.Cou
 		}
 		countryCodes = append(countryCodes, *cc)
 	}
+	if len(countryCodes) == 0 {
+		countryCodes = append(countryCodes, "us")
+	}
 	return countryCodes, nil
 }
 
