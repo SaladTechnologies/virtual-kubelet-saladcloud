@@ -447,7 +447,7 @@ func (p *SaladCloudProvider) getGPUClasses(pod *corev1.Pod) ([]string, error) {
 			saladClientGpuIds = append(saladClientGpuIds, gpuCleaned)
 		} else {
 			if gpuClasses == nil {
-				classes, _, err := p.apiClient.OrganizationDataAPI.ListGpuClasses(context.Background(), p.inputVars.OrganizationName).Execute()
+				classes, _, err := p.apiClient.OrganizationDataAPI.ListGpuClasses(p.contextWithAuth(), p.inputVars.OrganizationName).Execute()
 				if err != nil {
 					log.G(context.Background()).Errorf("Failed to get gpuClasses ", err)
 					return nil, err
