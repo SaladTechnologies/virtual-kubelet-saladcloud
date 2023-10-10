@@ -31,6 +31,7 @@ type SaladCloudProvider struct {
 	operatingSystem string
 	apiClient       *saladclient.APIClient
 	countryCodes    []saladclient.CountryCode
+	logger          log.Logger
 }
 
 const (
@@ -45,6 +46,7 @@ func NewSaladCloudProvider(ctx context.Context, inputVars models.InputVars) (*Sa
 	cloudProvider := &SaladCloudProvider{
 		inputVars: inputVars,
 		apiClient: saladclient.NewAPIClient(saladclient.NewConfiguration()),
+		logger:    log.G(ctx),
 	}
 	cloudProvider.setNodeCapacity()
 	cloudProvider.setCountryCodes([]string{"US"})
@@ -85,7 +87,7 @@ func (p *SaladCloudProvider) getNodeCapacity() corev1.ResourceList {
 func (p *SaladCloudProvider) CreatePod(ctx context.Context, pod *corev1.Pod) error {
 	ctx, span := trace.StartSpan(ctx, "CreatePod")
 	defer span.End()
-	log.G(ctx).Debug("creating a CreatePod", pod.Name)
+	p.logger.Debug("creating a CreatePod", pod.Name)
 	createContainerObject := p.createContainersObject(pod)
 	createContainerGroup := p.createContainerGroup(createContainerObject, pod)
 
@@ -97,7 +99,7 @@ func (p *SaladCloudProvider) CreatePod(ctx context.Context, pod *corev1.Pod) err
 		createContainerGroup[0],
 	).Execute()
 	if err != nil {
-		log.G(ctx).Errorf("Error when calling `ContainerGroupsAPI.CreateContainerGroupModel`", r)
+		p.logger.Errorf("Error when calling `ContainerGroupsAPI.CreateContainerGroupModel`", r)
 		return err
 	}
 
@@ -106,7 +108,7 @@ func (p *SaladCloudProvider) CreatePod(ctx context.Context, pod *corev1.Pod) err
 
 	startHttpResponse, err := p.apiClient.ContainerGroupsAPI.StartContainerGroup(p.contextWithAuth(), p.inputVars.OrganizationName, p.inputVars.ProjectName, utils.GetPodName(pod.Namespace, pod.Name, nil)).Execute()
 	if err != nil {
-		log.G(ctx).Errorf("Error when calling `ContainerGroupsAPI.CreateContainerGroupModel`", startHttpResponse)
+		p.logger.Errorf("Error when calling `ContainerGroupsAPI.CreateContainerGroupModel`", startHttpResponse)
 		err := p.DeletePod(ctx, pod)
 		if err != nil {
 			return err
@@ -143,7 +145,7 @@ func (p *SaladCloudProvider) CreatePod(ctx context.Context, pod *corev1.Pod) err
 		})
 	}
 
-	log.G(ctx).Infof("Done creating the container and initiating  the startup ", pod)
+	p.logger.Infof("Done creating the container and initiating  the startup ", pod)
 	return nil
 }
 
@@ -152,14 +154,14 @@ func (p *SaladCloudProvider) UpdatePod(ctx context.Context, pod *corev1.Pod) err
 }
 
 func (p *SaladCloudProvider) DeletePod(ctx context.Context, pod *corev1.Pod) error {
-	ctx, span := trace.StartSpan(ctx, "DeletePod")
+	_, span := trace.StartSpan(ctx, "DeletePod")
 	defer span.End()
-	log.G(ctx).Debug("deleting a pod")
+	p.logger.Debug("deleting a pod")
 	response, err := p.apiClient.ContainerGroupsAPI.DeleteContainerGroup(p.contextWithAuth(), p.inputVars.OrganizationName, p.inputVars.ProjectName, utils.GetPodName(pod.Namespace, pod.Name, pod)).Execute()
 	pod.Status.Phase = corev1.PodSucceeded
 	pod.Status.Reason = "Pod Deleted"
 	if err != nil {
-		log.G(ctx).Errorf("Error when deleting the container ", response)
+		p.logger.Errorf("Error when deleting the container ", response)
 		return err
 	}
 	now := metav1.Now()
@@ -173,7 +175,7 @@ func (p *SaladCloudProvider) DeletePod(ctx context.Context, pod *corev1.Pod) err
 			},
 		}
 	}
-	log.G(ctx).Infof("Done deleting the container ", pod)
+	p.logger.Infof("Done deleting the container ", pod)
 	return nil
 }
 
@@ -181,7 +183,7 @@ func (p *SaladCloudProvider) GetPod(ctx context.Context, namespace string, name 
 
 	resp, r, err := saladclient.NewAPIClient(saladclient.NewConfiguration()).ContainerGroupsAPI.GetContainerGroup(p.contextWithAuth(), p.inputVars.OrganizationName, p.inputVars.ProjectName, utils.GetPodName(namespace, name, nil)).Execute()
 	if err != nil {
-		log.G(ctx).Errorf("Error when calling `ContainerGroupsAPI.GetPod`", r)
+		p.logger.Errorf("Error when calling `ContainerGroupsAPI.GetPod`", r)
 		return nil, err
 	}
 	startTime := metav1.NewTime(resp.CreateTime)
@@ -222,12 +224,12 @@ func (p *SaladCloudProvider) contextWithAuth() context.Context {
 }
 
 func (p *SaladCloudProvider) GetPodStatus(ctx context.Context, namespace string, name string) (*corev1.PodStatus, error) {
-	ctx, span := trace.StartSpan(ctx, "GetPodStatus")
+	_, span := trace.StartSpan(ctx, "GetPodStatus")
 	defer span.End()
 
 	containerGroup, response, err := p.apiClient.ContainerGroupsAPI.GetContainerGroup(p.contextWithAuth(), p.inputVars.OrganizationName, p.inputVars.ProjectName, utils.GetPodName(namespace, name, nil)).Execute()
 	if err != nil {
-		log.G(ctx).Errorf("ContainerGroupsAPI.GetPodStatus ", response)
+		p.logger.Errorf("ContainerGroupsAPI.GetPodStatus ", response)
 		return nil, err
 	}
 
@@ -250,7 +252,7 @@ func (p *SaladCloudProvider) GetPods(ctx context.Context) ([]*corev1.Pod, error)
 
 	resp, r, err := p.apiClient.ContainerGroupsAPI.ListContainerGroups(p.contextWithAuth(), p.inputVars.OrganizationName, p.inputVars.ProjectName).Execute()
 	if err != nil {
-		log.G(ctx).Errorf("Error when list ContainerGroupsAPI.ListContainerGroups ", r)
+		p.logger.Errorf("Error when list ContainerGroupsAPI.ListContainerGroups ", r)
 		return nil, err
 	}
 	pods := make([]*corev1.Pod, 0)
