@@ -117,7 +117,7 @@ func runNode(ctx context.Context) error {
 }
 
 func newSaladCloudProvider(ctx context.Context, pc nodeutil.ProviderConfig) (nodeutil.Provider, node.NodeProvider, error) {
-	p, err := provider.NewSaladCloudProvider(ctx, inputs)
+	p, err := provider.NewSaladCloudProvider(ctx, inputs, pc)
 	if err != nil {
 		logrus.WithError(err).Error("Failed to create SaladCloud provider")
 		return nil, nil, err

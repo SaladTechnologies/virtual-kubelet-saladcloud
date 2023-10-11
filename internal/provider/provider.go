@@ -12,11 +12,13 @@ import (
 	"github.com/virtual-kubelet/virtual-kubelet/log"
 	nodeapi "github.com/virtual-kubelet/virtual-kubelet/node/api"
 	"github.com/virtual-kubelet/virtual-kubelet/node/api/statsv1alpha1"
+	"github.com/virtual-kubelet/virtual-kubelet/node/nodeutil"
 	"github.com/virtual-kubelet/virtual-kubelet/trace"
 	"io"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	corev1listers "k8s.io/client-go/listers/core/v1"
 	"strconv"
 	"strings"
 	"time"
@@ -32,6 +34,8 @@ type SaladCloudProvider struct {
 	apiClient       *saladclient.APIClient
 	countryCodes    []saladclient.CountryCode
 	logger          log.Logger
+	podsTracker     *PodsTracker
+	podLister       corev1listers.PodLister
 }
 
 const (
@@ -42,11 +46,12 @@ const (
 	defaultOperatingSystem = "Linux"
 )
 
-func NewSaladCloudProvider(ctx context.Context, inputVars models.InputVars) (*SaladCloudProvider, error) {
+func NewSaladCloudProvider(ctx context.Context, inputVars models.InputVars, providerConfig nodeutil.ProviderConfig) (*SaladCloudProvider, error) {
 	cloudProvider := &SaladCloudProvider{
 		inputVars: inputVars,
 		apiClient: saladclient.NewAPIClient(saladclient.NewConfiguration()),
 		logger:    log.G(ctx),
+		podLister: providerConfig.Pods,
 	}
 	cloudProvider.setNodeCapacity()
 	cloudProvider.setCountryCodes([]string{"US"})
@@ -82,6 +87,18 @@ func (p *SaladCloudProvider) getNodeCapacity() corev1.ResourceList {
 	}
 
 	return resourceList
+}
+
+func (p *SaladCloudProvider) NotifyPods(ctx context.Context, notifierCallback func(*corev1.Pod)) {
+	p.logger.Debug("Notify pods set")
+	p.podsTracker = &PodsTracker{
+		podLister:      p.podLister,
+		updateCallback: notifierCallback,
+		handler:        p,
+		ctx:            ctx,
+		logger:         p.logger,
+	}
+	go p.podsTracker.BeginPodTracking(ctx)
 }
 
 func (p *SaladCloudProvider) CreatePod(ctx context.Context, pod *corev1.Pod) error {
@@ -229,7 +246,9 @@ func (p *SaladCloudProvider) GetPodStatus(ctx context.Context, namespace string,
 
 	containerGroup, response, err := p.apiClient.ContainerGroupsAPI.GetContainerGroup(p.contextWithAuth(), p.inputVars.OrganizationName, p.inputVars.ProjectName, utils.GetPodName(namespace, name, nil)).Execute()
 	if err != nil {
-		p.logger.Errorf("ContainerGroupsAPI.GetPodStatus ", response)
+		p.logger.WithField("namespace", namespace).
+			WithField("name", name).
+			Errorf("ContainerGroupsAPI.GetPodStatus ", response)
 		return nil, err
 	}
 
