@@ -2,8 +2,11 @@ package provider
 
 import (
 	"context"
+	"errors"
+	openapi "github.com/lucklypriyansh-2/salad-client"
 	"github.com/virtual-kubelet/virtual-kubelet/log"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	corev1listers "k8s.io/client-go/listers/core/v1"
 	"time"
@@ -56,10 +59,57 @@ func (pt *PodsTracker) updatePods() {
 		return
 	}
 	for _, pod := range k8sPods {
-		pt.logger.Debug("update pod", pod.Name)
+		updatedPod := pod.DeepCopy()
+		ok := pt.handlePodUpdates(updatedPod)
+		if ok {
+			pt.updateCallback(updatedPod)
+		}
 	}
 }
 
 func (pt *PodsTracker) removeStalePods() {
 	pt.logger.Debug("Pod notifier remove stale pods called")
+}
+
+func (pt *PodsTracker) handlePodUpdates(pod *corev1.Pod) bool {
+	if pt.isPodStatusUpdateRequired(pod) {
+		pt.logger.Infof("pod %s will skip pod status update", pod.Name)
+		return false
+	}
+	newStatus, err := pt.handler.GetPodStatus(pt.ctx, pod.Namespace, pod.Name)
+	if err == nil && newStatus != nil {
+		newStatus.DeepCopyInto(&pod.Status)
+		return true
+	}
+	var openApiErr openapi.GenericOpenAPIError
+	if pod.Status.Phase == corev1.PodRunning && errors.As(err, &openApiErr) {
+		pod.Status.Phase = corev1.PodFailed
+		pod.Status.Reason = "NotFoundOnProvider"
+		pod.Status.Message = "the workload has been deleted from salad cloud"
+		now := metav1.NewTime(time.Now())
+		for i := range pod.Status.ContainerStatuses {
+			if pod.Status.ContainerStatuses[i].State.Running == nil {
+				continue
+			}
+
+			pod.Status.ContainerStatuses[i].State.Terminated = &corev1.ContainerStateTerminated{
+				ExitCode:    137,
+				Reason:      "NotFoundOnProvider",
+				Message:     "the workload has been deleted from salad cloud",
+				FinishedAt:  now,
+				StartedAt:   pod.Status.ContainerStatuses[i].State.Running.StartedAt,
+				ContainerID: pod.Status.ContainerStatuses[i].ContainerID,
+			}
+			pod.Status.ContainerStatuses[i].State.Running = nil
+		}
+		return true
+	}
+	return false
+}
+
+func (pt *PodsTracker) isPodStatusUpdateRequired(pod *corev1.Pod) bool {
+	return pod.Status.Phase == corev1.PodSucceeded || // Pod completed its execution
+		pod.Status.Phase == corev1.PodFailed ||
+		pod.Status.Reason == "ProviderFailed" || // in case if provider failed to create/register the pod
+		pod.DeletionTimestamp != nil // Terminating
 }
