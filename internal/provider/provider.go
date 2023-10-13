@@ -268,7 +268,6 @@ func (p *SaladCloudProvider) GetPodStatus(ctx context.Context, namespace string,
 }
 
 func (p *SaladCloudProvider) GetPods(ctx context.Context) ([]*corev1.Pod, error) {
-
 	resp, r, err := p.apiClient.ContainerGroupsAPI.ListContainerGroups(p.contextWithAuth(), p.inputVars.OrganizationName, p.inputVars.ProjectName).Execute()
 	if err != nil {
 		p.logger.Errorf("Error when list ContainerGroupsAPI.ListContainerGroups ", r)

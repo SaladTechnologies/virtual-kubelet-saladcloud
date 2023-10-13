@@ -87,12 +87,12 @@ func (pt *PodsTracker) removeStalePods() {
 		clusterPodMap[key] = true
 	}
 	for i := range activePods {
-		if _, exists := clusterPodMap[activePods[i].Name]; !exists {
+		if _, exists := clusterPodMap[activePods[i].Spec.Containers[0].Name]; !exists {
+			pt.logger.Debugf("removeStalePodsInCluster: removing stale pod: %s", activePods[i].Name)
 			err := pt.handler.DeletePod(pt.ctx, activePods[i])
 			if err != nil {
 				pt.logger.WithError(err).Errorf("removeStalePodsInCluster: failed to remove stale pod %v", activePods[i].Name)
 			}
-
 		}
 	}
 }
