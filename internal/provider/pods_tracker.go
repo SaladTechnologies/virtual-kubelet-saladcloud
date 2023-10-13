@@ -3,12 +3,14 @@ package provider
 import (
 	"context"
 	"errors"
-	openapi "github.com/lucklypriyansh-2/salad-client"
+	"github.com/SaladTechnologies/virtual-kubelet-saladcloud/internal/models"
+	"github.com/SaladTechnologies/virtual-kubelet-saladcloud/internal/utils"
 	"github.com/virtual-kubelet/virtual-kubelet/log"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	corev1listers "k8s.io/client-go/listers/core/v1"
+	"net/http"
 	"time"
 )
 
@@ -68,43 +70,76 @@ func (pt *PodsTracker) updatePods() {
 }
 
 func (pt *PodsTracker) removeStalePods() {
-	pt.logger.Debug("Pod notifier remove stale pods called")
+	pt.logger.Debug("remove stale Pods from cluster")
+	clusterPods, err := pt.podLister.List(labels.Everything())
+	if err != nil {
+		pt.logger.WithError(err).Errorf("removeStalePodsInCluster: failed to retrieve pods list")
+		return
+	}
+	activePods, err := pt.handler.GetPods(pt.ctx)
+	if err != nil {
+		pt.logger.WithError(err).Errorf("removeStalePodsInCluster: failed to retrieve active container groups")
+		return
+	}
+	clusterPodMap := make(map[string]bool)
+	for _, pod := range clusterPods {
+		key := utils.GetPodName(pod.Namespace, pod.Name, pod)
+		clusterPodMap[key] = true
+	}
+	for i := range activePods {
+		if _, exists := clusterPodMap[activePods[i].Name]; !exists {
+			err := pt.handler.DeletePod(pt.ctx, activePods[i])
+			if err != nil {
+				pt.logger.WithError(err).Errorf("removeStalePodsInCluster: failed to remove stale pod %v", activePods[i].Name)
+			}
+
+		}
+	}
 }
 
 func (pt *PodsTracker) handlePodUpdates(pod *corev1.Pod) bool {
+	pt.logger.Debug("Processing Pod Updates")
 	if pt.isPodStatusUpdateRequired(pod) {
-		pt.logger.Infof("pod %s will skip pod status update", pod.Name)
+		pt.logger.Infof("handlePodStatusUpdate: Skipping pod status update for pod %s", pod.Name)
 		return false
 	}
-	newStatus, err := pt.handler.GetPodStatus(pt.ctx, pod.Namespace, pod.Name)
-	if err == nil && newStatus != nil {
-		newStatus.DeepCopyInto(&pod.Status)
+	podCurrentStatus, err := pt.handler.GetPodStatus(pt.ctx, pod.Namespace, pod.Name)
+	if err == nil && podCurrentStatus != nil {
+		podCurrentStatus.DeepCopyInto(&pod.Status)
 		return true
 	}
-	var openApiErr openapi.GenericOpenAPIError
-	if pod.Status.Phase == corev1.PodRunning && errors.As(err, &openApiErr) {
+	if err != nil {
+		var apiError *models.APIError
+		if errors.As(err, &apiError) && pod.Status.Phase == corev1.PodRunning && apiError.StatusCode == http.StatusNotFound {
+			return pt.handlePodNotFound(pod)
+		}
+		pt.logger.WithError(err).Errorf("handlePodStatusUpdate: Failed to retrieve pod %v status from provider", pod.Name)
+		return false
+	}
+	return true
+}
+
+func (pt *PodsTracker) handlePodNotFound(pod *corev1.Pod) bool {
+	pt.logger.Infof("handlePodNotFound: Pod %s not found on the provider, updating status", pod.Name)
+	for i := range pod.Status.ContainerStatuses {
 		pod.Status.Phase = corev1.PodFailed
 		pod.Status.Reason = "NotFoundOnProvider"
-		pod.Status.Message = "the workload has been deleted from salad cloud"
+		pod.Status.Message = "The container group has been deleted"
 		now := metav1.NewTime(time.Now())
-		for i := range pod.Status.ContainerStatuses {
-			if pod.Status.ContainerStatuses[i].State.Running == nil {
-				continue
-			}
-
-			pod.Status.ContainerStatuses[i].State.Terminated = &corev1.ContainerStateTerminated{
-				ExitCode:    137,
-				Reason:      "NotFoundOnProvider",
-				Message:     "the workload has been deleted from salad cloud",
-				FinishedAt:  now,
-				StartedAt:   pod.Status.ContainerStatuses[i].State.Running.StartedAt,
-				ContainerID: pod.Status.ContainerStatuses[i].ContainerID,
-			}
-			pod.Status.ContainerStatuses[i].State.Running = nil
+		if pod.Status.ContainerStatuses[i].State.Running == nil {
+			continue
 		}
-		return true
+		pod.Status.ContainerStatuses[i].State.Terminated = &corev1.ContainerStateTerminated{
+			ExitCode:    137,
+			Reason:      "NotFoundOnProvider",
+			Message:     "The container group has been deleted",
+			FinishedAt:  now,
+			StartedAt:   pod.Status.ContainerStatuses[i].State.Running.StartedAt,
+			ContainerID: pod.Status.ContainerStatuses[i].ContainerID,
+		}
+		pod.Status.ContainerStatuses[i].State.Running = nil
 	}
-	return false
+	return true
 }
 
 func (pt *PodsTracker) isPodStatusUpdateRequired(pod *corev1.Pod) bool {

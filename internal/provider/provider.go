@@ -249,7 +249,7 @@ func (p *SaladCloudProvider) GetPodStatus(ctx context.Context, namespace string,
 		p.logger.WithField("namespace", namespace).
 			WithField("name", name).
 			Errorf("ContainerGroupsAPI.GetPodStatus ", response)
-		return nil, err
+		return nil, models.NewSaladCloudError(err, response)
 	}
 
 	startTime := metav1.NewTime(containerGroup.CreateTime)
