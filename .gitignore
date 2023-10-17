@@ -41,3 +41,7 @@ go.work
 
 ## Jetbrains IDE
 .idea
+
+## Custom Rules
+
+bin/
