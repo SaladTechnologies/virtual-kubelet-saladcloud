@@ -1,12 +1,9 @@
 apiVersion: v2
-description: a Helm chart to install virtual kubelet with Azure provider in an AKS cluster.
+description: A Helm chart to install the SaladCloud Virtual Kubelet provider in a Kubernetes cluster.
 maintainers:
-- email: guofei@microsoft.com
-  name: Fei Guo
-- email: heba.elayoty@microsoft.com
-  name: Heba Elayoty
-name: virtual-kubelet-azure-aci
+  - email: kyle@salad.com
+    name: Kyle Dodson
+name: virtual-kubelet-saladcloud
 sources:
-- https://github.com/virtual-kubelet/azure-aci
-version: 1.6.0
-
+  - https://github.com/SaladTechnologies/virtual-kubelet-saladcloud
+version: 1.0.0

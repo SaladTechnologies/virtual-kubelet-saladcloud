@@ -14,75 +14,24 @@ spec:
     metadata:
 {{ include "vk.labels" . | indent 6 }}
         component: kubelet
-      labels:
-        app: {{ template "vk.fullname" . }}
     spec:
       containers:
-      - name: {{ template "vk.fullname" . }}
-        image: "{{ .Values.image.repository }}/{{ .Values.image.name }}:{{ .Values.image.tag }}"
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
-        env:
-        - name: KUBELET_PORT
-          value: "10250"
-        - name: APISERVER_CERT_LOCATION
-          value: /etc/virtual-kubelet/cert.pem
-        - name: APISERVER_KEY_LOCATION
-          value: /etc/virtual-kubelet/key.pem
-        - name: VKUBELET_POD_IP
-          valueFrom:
-            fieldRef:
-              fieldPath: status.podIP
-        - name: VKUBELET_TAINT_KEY
-          value: {{ .Values.taint.key }}
-        - name: VKUBELET_TAINT_VALUE
-          value: {{ tpl .Values.taint.value $ }}
-        - name: VKUBELET_TAINT_EFFECT
-          value: {{ .Values.taint.effect }}
-{{- if .managedIdentityID }}
-        - name: VIRTUALNODE_USER_IDENTITY_CLIENTID
-          value: {{ .managedIdentityID }}
-{{- end }}
-{{- if .enableRealTimeMetrics }}
-        - name: ENABLE_REAL_TIME_METRICS
-          value: "true"
-{{- end }}
-        volumeMounts:
-        - name: certificates
-          mountPath: /etc/kubernetes/certs
-          readOnly: true
-        command: ["virtual-kubelet"]
-        args: [
+        - name: {{ template "vk.fullname" . }}
+          image: "{{ .Values.image.repository }}/{{ .Values.image.name }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["virtual-kubelet"]
+          args: [
 {{- if not .Values.taint.enabled }}
-          "--disable-taint", "true",
+            "--disable-taint", "true",
 {{- end }}
-          "--nodename", "{{ required "nodeName is required" .Values.nodeName }}",
+            "--nodename", "{{ required "nodename is required" .Values.nodename }}",
 {{- if .Values.logLevel }}
-          "--logLevel", "{{.Values.logLevel}}",
+            "--logLevel", "{{.Values.logLevel}}",
 {{- end }}
-#{{- if ne .Values.trace.exporter "" }}
-#          "--trace-exporter", "{{ .Values.trace.exporter }}",
-#{{- if gt .Values.trace.sampleRate 0.0 }}
-#          "--trace-sample-rate", "{{ .Values.trace.sampleRate }}",
-#{{- end }}
-#{{- $serviceName := tpl .Values.trace.serviceName $ }}
-#{{- if ne $serviceName "" }}
-#          "--trace-service-name", "{{ $serviceName }}",
-#{{- end}}
-#{{- end}}
-#{{- if  .Values.enableAuthenticationTokenWebhook }}
-#          "--authentication-token-webhook=true",
-#          "--client-verify-ca", "/etc/kubernetes/certs/ca.crt",
-#{{- end }}
-#          "--no-verify-clients={{ .Values.disableVerifyClients }}",
-#          "--os", "{{ .Values.nodeOsType }}"
-           "--api-key", "{{ .Values.Salad.ApiKey }}",
-           "--organizationName", "{{ .Values.Salad.OrganizationName }}",
-           "--projectName", "{{ .Values.Salad.ProjectName }}"
-        ]
-      volumes:
-      - name: certificates
-        hostPath:
-          path: /etc/kubernetes/certs
+            "--api-key", "{{ .Values.salad.apiKey }}",
+            "--organizationName", "{{ .Values.salad.organizationName }}",
+            "--projectName", "{{ .Values.salad.projectName }}"
+          ]
       serviceAccountName: {{ if .Values.rbac.install }} "{{ template "vk.fullname" . }}-{{ .Values.rbac.serviceAccountName }}" {{ end }}
       nodeSelector:
-        beta.kubernetes.io/os: linux
+        kubernetes.io/os: linux

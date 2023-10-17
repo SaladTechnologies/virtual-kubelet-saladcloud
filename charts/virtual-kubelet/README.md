@@ -1,8 +1,8 @@
-# Azure ACI plugin for Virtual Kubelet
+# SaladCloud Virtual Kubelet provider
 
 ## Installation
 
-Quick start instructions for the setup  using Helm.
+Quick start instructions for the setup using Helm.
 
 ### Prerequisites
 
@@ -32,7 +32,7 @@ $ export CHART_URL=https://github.com/virtual-kubelet/azure-aci/raw/gh-pages/cha
 $ helm install "$CHART_NAME" "$CHART_URL" \
   --set provider=azure \
   --set providers.azure.masterUri=$MASTER_URI \
-  --set nodeName=$NODE_NAME
+  --set nodename=$NODE_NAME
 ```
 
 3. Verify that azure-aci pod is running properly
@@ -40,6 +40,7 @@ $ helm install "$CHART_NAME" "$CHART_URL" \
 ```shell
 $ kubectl get nodes
 ```
+
 <details>
 <summary>Result</summary>
 
@@ -47,6 +48,7 @@ $ kubectl get nodes
 NAME                                   STATUS    ROLES     AGE       VERSION
 virtual-kubelet-aci                    Ready     agent     2m         v1.19.10-vk-azure-aci-vx.x.x-dev
 ```
+
 </details><br/>
 
 ### Configuration
@@ -54,17 +56,17 @@ virtual-kubelet-aci                    Ready     agent     2m         v1.19.10-v
 The following table lists the configurable parameters of the azure-aci chart and the default values.
 
 | Parameter                                      | Description                                                                                                           | Default                               |
-|------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|---------------------------------------|
- | namespace                                      | The name of the namespace that azure-aci will be deployed in.                                                         | `vk-azure-aci`                        | 
+| ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| namespace                                      | The name of the namespace that azure-aci will be deployed in.                                                         | `vk-azure-aci`                        |
 | image.secretName                               | The name of image secret.                                                                                             | `virtual-kubelet-aci-acr`             |
 | image.repository                               | Image repository.                                                                                                     | `mcr.microsoft.com`                   |
 | image.name                                     | Image name.                                                                                                           | `oss/virtual-kubelet/virtual-kubelet` |
 | image.tag                                      | Image release version/tag.                                                                                            | `latest`                              |
-| image.pullPolicy                               | Image pull policy.                                                                                                    | `Always`                              | 
+| image.pullPolicy                               | Image pull policy.                                                                                                    | `Always`                              |
 | initImage.name                                 | Init container image name.                                                                                            | `oss/virtual-kubelet/init-validation` |
 | initImage.initTag                              | Init container image release version/tag.                                                                             | `0.2.0`                               |
 | initImage.pullPolicy                           | Init container image pull policy.                                                                                     | `Always`                              |
-| nodeName                                       | The node name that will be assigned to be the VK one.                                                                 | `virtual-node-aci-linux-helm`         |
+| nodename                                       | The node name that will be assigned to be the VK one.                                                                 | `virtual-node-aci-linux-helm`         |
 | nodeOsType                                     | The node/VM type. Values should be `Windows` or `Linux`.                                                              | `Linux`                               |
 | monitoredNamespace                             | Kubernetes namespace. default values means monitor `all`                                                              | `""`                                  |
 | apiserverCert                                  | API server certificate. By default, the provider will generate a certificate.                                         | ` `                                   |
@@ -77,7 +79,7 @@ The following table lists the configurable parameters of the azure-aci chart and
 | taint.value                                    | Taint value.                                                                                                          | Same as `provider` parameter          |
 | taint.effect                                   | The value must be `NoSchedule`, `PreferNoSchedule` or `NoExecute`.                                                    | `NoSchedule`                          |
 | trace.exporter                                 | The default exporter is `opencensus`.                                                                                 | `""`                                  |
-| trace.serviceName                              | The service name that exporter get info for. Default is the node name.                                                | Same as `nodeName` parameter          |
+| trace.serviceName                              | The service name that exporter get info for. Default is the node name.                                                | Same as `nodename` parameter          |
 | trace.sampleRate                               | Trace sample rate.                                                                                                    | `0`                                   |
 | providers.azure.targetAKS                      | Set to true if deploying to Azure Kubernetes Service (AKS), otherwise false.                                          | `true`                                |
 | providers.azure.clientId                       | Only required if `targetAKS` is false.                                                                                | ` `                                   |
