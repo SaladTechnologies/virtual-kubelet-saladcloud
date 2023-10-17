@@ -67,14 +67,15 @@ func main() {
 func initCommandFlags() {
 	virtualKubeletCommand.Flags().StringVar(&inputs.NodeName, "nodename", inputs.NodeName, "Kubernetes node name")
 	virtualKubeletCommand.Flags().StringVar(&inputs.KubeConfig, "kube-config", inputs.KubeConfig, "Kubeconfig file")
-	virtualKubeletCommand.Flags().StringVar(&inputs.OrganizationName, "organizationName", inputs.OrganizationName, "Organization name for Salad Client")
-	virtualKubeletCommand.Flags().BoolVar(&inputs.DisableTaint, "Disable taint flag", inputs.DisableTaint, "Disable the tainted effect")
-	virtualKubeletCommand.Flags().StringVar(&inputs.ApiKey, "api-key", inputs.ApiKey, "API key for the Salad Client")
-	virtualKubeletCommand.Flags().StringVar(&inputs.ProjectName, "projectName", inputs.ProjectName, "Project name for Salad Client")
-	virtualKubeletCommand.Flags().StringVar(&inputs.LogLevel, "logLevel", inputs.LogLevel, "Log level for the node, default to info")
+	virtualKubeletCommand.Flags().BoolVar(&inputs.DisableTaint, "disable-taint", inputs.DisableTaint, "Disable the tainted effect")
+	virtualKubeletCommand.Flags().StringVar(&inputs.LogLevel, "log-level", inputs.LogLevel, "Log level for the node")
+	virtualKubeletCommand.Flags().StringVar(&inputs.ApiKey, "sce-api-key", inputs.ApiKey, "SaladCloud API Key")
+	virtualKubeletCommand.Flags().StringVar(&inputs.OrganizationName, "sce-organization-name", inputs.OrganizationName, "SaladCloud Organization Name")
+	virtualKubeletCommand.Flags().StringVar(&inputs.ProjectName, "sce-project-name", inputs.ProjectName, "SaladCloud Project Name")
 
-	markFlagRequired("organizationName")
-	markFlagRequired("projectName")
+	markFlagRequired("sce-api-key")
+	markFlagRequired("sce-organization-name")
+	markFlagRequired("sce-project-name")
 }
 
 func markFlagRequired(flagName string) {

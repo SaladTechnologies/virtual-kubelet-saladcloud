@@ -15,11 +15,11 @@ go mod download
 ```
 3. Build the project
 ```bash
-go build
+go build -o virtual-kubelet ./cmd/virtual-kubelet/main.go
 ```
 4. Run the project
 ```bash
-go run main.go --nodename {valid_node_name} --projectName {projectName} --organizationName {organizationName} --api-key {api-key} --kubeconfig {kubeconfig}
+go run main.go --nodename {valid_node_name} --sce-project-name {projectName} --sce-organization-name {organizationName} --sce-api-key {api-key} --kubeconfig {kubeconfig}
 ```
 
 ## Prerequisites
