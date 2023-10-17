@@ -6,13 +6,13 @@ image:
 
 logLevel: debug
 
-namespace: virtual-kubelet-saladcloud
+namespace: saladcloud
 
-nodename: virtual-kubelet-saladcloud-node
+nodename: saladcloud-node
 
 rbac:
   install: true
-  serviceAccountName: virtual-kubelet-saladcloud
+  serviceAccountName: saladcloud-virtual-kubelet
   apiVersion: v1
   roleRef: cluster-admin
 

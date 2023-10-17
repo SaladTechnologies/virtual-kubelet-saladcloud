@@ -14,6 +14,7 @@ spec:
     metadata:
 {{ include "vk.labels" . | indent 6 }}
         component: kubelet
+        app: {{ template "vk.fullname" . }}
     spec:
       containers:
         - name: {{ template "vk.fullname" . }}
@@ -21,16 +22,16 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["virtual-kubelet"]
           args: [
+            "--nodename", "{{ required "nodename is required" .Values.nodename }}",
 {{- if not .Values.taint.enabled }}
             "--disable-taint", "true",
 {{- end }}
-            "--nodename", "{{ required "nodename is required" .Values.nodename }}",
 {{- if .Values.logLevel }}
-            "--logLevel", "{{.Values.logLevel}}",
+            "--log-level", "{{.Values.logLevel}}",
 {{- end }}
-            "--api-key", "{{ .Values.salad.apiKey }}",
-            "--organizationName", "{{ .Values.salad.organizationName }}",
-            "--projectName", "{{ .Values.salad.projectName }}"
+            "--sce-api-key", "{{ .Values.salad.apiKey }}",
+            "--sce-organization-name", "{{ .Values.salad.organizationName }}",
+            "--sce-project-name", "{{ .Values.salad.projectName }}"
           ]
       serviceAccountName: {{ if .Values.rbac.install }} "{{ template "vk.fullname" . }}-{{ .Values.rbac.serviceAccountName }}" {{ end }}
       nodeSelector:
