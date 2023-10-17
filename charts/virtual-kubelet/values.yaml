@@ -1,21 +1,21 @@
 image:
-  secretName: virtual-kubelet-aci-acr
+  #  secretName: virtual-kubelet-aci-acr
   repository: us.gcr.io
   name: salad-app/salad-virtual-kubelet
-  tag: 1.0.0
-  pullPolicy: Always
+  tag: 1.0.1
+  pullPolicy: IfNotPresent
 
-initImage:
-  repository: mcr.microsoft.com
-  name: oss/virtual-kubelet/init-validation
-  initTag: 0.2.0
-  pullPolicy: Always
+#initImage:
+#  repository: mcr.microsoft.com
+#  name: oss/virtual-kubelet/init-validation
+#  initTag: 0.2.0
+#  pullPolicy: Always
 
-namespace: salad-virtual-kubelet
+namespace: vk-azure-aci
 
 nodeName: "virtual-node-aci-linux-helm"
 nodeOsType: "Linux"
-monitoredNamespace: ""
+monitoredNamespace: "vk-azure-aci"
 apiserverCert:
 apiserverKey:
 logLevel:
@@ -66,7 +66,7 @@ providers:
       # kubeDnsIp defaults to 10.0.0.10 if not specified
       kubeDnsIp: 10.0.0.10
 
-provider: azure
+#provider: azure
 
 ## Install Default RBAC roles and bindings
 rbac:
@@ -76,3 +76,8 @@ rbac:
   apiVersion: v1
   ## Cluster role reference
   roleRef: cluster-admin
+
+Salad:
+  ApiKey: "acf8b837-9ef9-4782-805a-7b9628cfa4d7"
+  OrganizationName: "Salad"
+  ProjectName: "Salad-Virtual-Node"
