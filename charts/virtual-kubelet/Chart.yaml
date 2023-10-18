@@ -1,9 +1,20 @@
 apiVersion: v2
-description: A Helm chart to install the SaladCloud Virtual Kubelet provider in a Kubernetes cluster.
+description: Deploy containers to SaladCloud from your Kubernetes cluster using a virtual node
+home: https://github.com/SaladTechnologies/virtual-kubelet-saladcloud
+icon: https://raw.githubusercontent.com/SaladTechnologies/virtual-kubelet-saladcloud/main/images/salad-logo-500x500.png
+keywords:
+  - gpu
+  - kubernetes
+  - salad
+  - saladcloud
+  - virtual-kubelet
+  - virtual-kubelet-provider
+kubeVersion: ">=v1.26.0-0"
 maintainers:
   - email: kyle@salad.com
     name: Kyle Dodson
 name: virtual-kubelet-saladcloud
 sources:
   - https://github.com/SaladTechnologies/virtual-kubelet-saladcloud
-version: 1.0.0
+type: application
+version: 0.1.0

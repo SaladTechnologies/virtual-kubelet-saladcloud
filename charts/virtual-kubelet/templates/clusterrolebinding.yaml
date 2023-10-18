@@ -1,15 +1,28 @@
-{{ if .Values.rbac.install }}
-apiVersion: "rbac.authorization.k8s.io/{{ .Values.rbac.apiVersion }}"
+{{- if .Values.rbac.create -}}
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: {{ template "vk.fullname" . }}-{{ .Values.rbac.serviceAccountName }}
-{{ include "vk.labels" . | indent 2 }}
-subjects:
-- kind: ServiceAccount
-  name: {{ template "vk.fullname" . }}-{{ .Values.rbac.serviceAccountName }}
-  namespace: {{ .Values.namespace }}
+  {{- if or .Values.additionalAnnotations .Values.rbac.annotations }}
+  annotations:
+    {{- with .Values.additionalAnnotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.rbac.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- end }}
+  labels:
+    {{- include "virtual-kubelet-saladcloud.labels" . | nindent 4 }}
+    {{- with .Values.additionalLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  name: {{ .Values.serviceAccount.name }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: {{ .Values.rbac.roleRef }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ .Values.serviceAccount.name }}
+    namespace: {{ .Release.Namespace }}
 {{ end }}

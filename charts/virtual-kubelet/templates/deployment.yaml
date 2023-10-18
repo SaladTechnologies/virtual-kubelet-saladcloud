@@ -1,38 +1,82 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: {{ .Values.namespace }}
-  name: {{ template "vk.fullname" . }}
-{{ include "vk.labels" . | indent 2 }}
-    component: kubelet
+  {{- if or .Values.additionalAnnotations .Values.provider.annotations }}
+  annotations:
+    {{- with .Values.additionalAnnotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.provider.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- end }}
+  labels:
+    {{- include "virtual-kubelet-saladcloud.labels" . | nindent 4 }}
+    {{- with .Values.additionalLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    app: {{ .Values.provider.name }}
+    name: {{ .Values.provider.name }}
+    app.kubernetes.io/component: kubelet
+    app.kubernetes.io/name: {{ .Values.provider.name }}
+  name: {{ .Values.provider.name }}
+  namespace: {{ .Release.Namespace }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: {{ template "vk.fullname" . }}
+      app: {{ .Values.provider.name }}
   template:
     metadata:
-{{ include "vk.labels" . | indent 6 }}
-        component: kubelet
-        app: {{ template "vk.fullname" . }}
+      {{- if or .Values.additionalAnnotations .Values.provider.annotations }}
+      annotations:
+        {{- with .Values.additionalAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.provider.annotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- end }}
+      labels:
+        {{- include "virtual-kubelet-saladcloud.labels" . | nindent 8 }}
+        {{- with .Values.additionalLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        app: {{ .Values.provider.name }}
+        name: {{ .Values.provider.name }}
+        app.kubernetes.io/component: kubelet
+        app.kubernetes.io/name: {{ .Values.provider.name }}
     spec:
       containers:
-        - name: {{ template "vk.fullname" . }}
-          image: "{{ .Values.image.repository }}/{{ .Values.image.name }}:{{ .Values.image.tag }}"
+        - name: {{ .Values.provider.name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command: ["virtual-kubelet"]
-          args: [
-            "--nodename", "{{ required "nodename is required" .Values.nodename }}",
-{{- if not .Values.taint.enabled }}
-            "--disable-taint", "true",
-{{- end }}
-{{- if .Values.logLevel }}
-            "--log-level", "{{.Values.logLevel}}",
-{{- end }}
-            "--sce-api-key", "{{ .Values.salad.apiKey }}",
-            "--sce-organization-name", "{{ .Values.salad.organizationName }}",
-            "--sce-project-name", "{{ .Values.salad.projectName }}"
-          ]
-      serviceAccountName: {{ if .Values.rbac.install }} "{{ template "vk.fullname" . }}-{{ .Values.rbac.serviceAccountName }}" {{ end }}
+          command:
+            - "virtual-kubelet"
+          args:
+            - "--nodename"
+            - "{{ required "nodename is required" .Values.provider.nodename }}"
+            {{- if not .Values.provider.taintEnabled }}
+            - "--disable-taint"
+            - "true"
+            {{- end }}
+            {{- if .Values.provider.logLevel }}
+            - "--log-level"
+            - "{{.Values.provider.logLevel}}"
+            {{- end }}
+            - "--sce-api-key"
+            - "{{ .Values.salad.apiKey }}"
+            - "--sce-organization-name"
+            - "{{ .Values.salad.organizationName }}"
+            - "--sce-project-name"
+            - "{{ .Values.salad.projectName }}"
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       nodeSelector:
         kubernetes.io/os: linux
+        {{- with .Values.nodeSelector }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      serviceAccountName: {{ .Values.serviceAccount.name }}

@@ -1,25 +1,33 @@
+additionalAnnotations: {}
+
+additionalLabels: {}
+
 image:
-  repository: us.gcr.io
-  name: salad-app/salad-virtual-kubelet
-  tag: 1.0.1
+  repository: virtual-kubelet-saladcloud
+  tag: 1.0.0
   pullPolicy: IfNotPresent
 
-logLevel: debug
-
-namespace: saladcloud
-
-nodename: saladcloud-node
-
-rbac:
-  install: true
-  serviceAccountName: saladcloud-virtual-kubelet
-  apiVersion: v1
-  roleRef: cluster-admin
+provider:
+  name: saladcloud-virtual-kubelet
+  logLevel: warn
+  nodename: saladcloud-node
+  taintEnabled: true
+  additionalAnnotations: {}
+  additionalLabels: {}
 
 salad:
   apiKey: acf8b837-9ef9-4782-805a-7b9628cfa4d7
   organizationName: salad
   projectName: prod
 
-taint:
-  enabled: true
+serviceAccount:
+  create: true
+  name: saladcloud-virtual-kubelet
+  additionalAnnotations: {}
+  additionalLabels: {}
+
+rbac:
+  create: true
+  roleRef: cluster-admin
+  additionalAnnotations: {}
+  additionalLabels: {}

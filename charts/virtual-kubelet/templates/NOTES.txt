@@ -1,5 +1,18 @@
-The SaladCloud Virtual Kubelet provider is getting deployed on your cluster.
+The SaladCloud virtual node is deploying to your cluster.
 
-To verify that the Virtual Kubelet has started, run:
+To verify that the virtual node has started, run:
 
-  kubectl --namespace={{ .Release.Namespace }} describe deployment "{{ .Chart.Name }}"
+  - kubectl --namespace={{ .Release.Namespace }} describe deployment {{ .Chart.Name }}
+  - kubectl get nodes
+
+{{- if lt .Capabilities.KubeVersion.Minor "26" }}
+-------------------------------------------------------------------------------------
+WARNING - Running on unsupported Kubernetes version "1.{{.Capabilities.KubeVersion.Minor}}". This is supported and tested on Kubernetes "1.26" or higher.
+-------------------------------------------------------------------------------------
+{{- end }}
+
+Learn more about SaladCloud:
+
+  - https://docs.salad.com/
+  - https://portal.salad.com/
+  - https://salad.com/
