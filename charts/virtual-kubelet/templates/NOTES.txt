@@ -1,9 +1,12 @@
 The SaladCloud virtual node is deploying to your cluster.
 
-To verify that the virtual node has started, run:
+To verify the deployment, run:
 
-  - kubectl --namespace={{ .Release.Namespace }} describe deployment {{ .Chart.Name }}
-  - kubectl get nodes
+  kubectl --namespace={{ .Release.Namespace }} get pods --selector='app.kubernetes.io/name={{ include "virtual-kubelet-saladcloud.name" . }},app.kubernetes.io/instance={{ .Release.Name }}'
+
+To verify the virtual node, run:
+
+  kubectl get node {{ .Values.provider.nodename }}
 
 {{- if lt .Capabilities.KubeVersion.Minor "26" }}
 -------------------------------------------------------------------------------------
@@ -11,7 +14,7 @@ WARNING - Running on unsupported Kubernetes version "1.{{.Capabilities.KubeVersi
 -------------------------------------------------------------------------------------
 {{- end }}
 
-Learn more about SaladCloud:
+Learn more about SaladCloud and running workloads:
 
   - https://docs.salad.com/
   - https://portal.salad.com/

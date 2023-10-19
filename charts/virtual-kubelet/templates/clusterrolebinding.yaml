@@ -1,28 +1,20 @@
 {{- if .Values.rbac.create -}}
-apiVersion: rbac.authorization.k8s.io/v1
+apiVersion: {{ template "virtual-kubelet-saladcloud.rbacApiVersion" . }}
 kind: ClusterRoleBinding
 metadata:
-  {{- if or .Values.additionalAnnotations .Values.rbac.annotations }}
+  {{- with .Values.rbac.annotations }}
   annotations:
-    {{- with .Values.additionalAnnotations }}
     {{- toYaml . | nindent 4 }}
-    {{- end }}
-    {{- with .Values.rbac.annotations }}
-    {{- toYaml . | nindent 4 }}
-    {{- end }}
   {{- end }}
   labels:
     {{- include "virtual-kubelet-saladcloud.labels" . | nindent 4 }}
-    {{- with .Values.additionalLabels }}
-    {{- toYaml . | nindent 4 }}
-    {{- end }}
-  name: {{ .Values.serviceAccount.name }}
+  name: {{ include "virtual-kubelet-saladcloud.clusterRoleName" . }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: {{ .Values.rbac.roleRef }}
+  name: {{ .Values.rbac.clusterRoleName }}
 subjects:
   - kind: ServiceAccount
-    name: {{ .Values.serviceAccount.name }}
+    name: {{ include "virtual-kubelet-saladcloud.serviceAccountName" . }}
     namespace: {{ .Release.Namespace }}
 {{ end }}

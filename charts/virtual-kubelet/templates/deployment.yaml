@@ -1,61 +1,47 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  {{- if or .Values.additionalAnnotations .Values.provider.annotations }}
+  {{- with .Values.provider.deploymentAnnotations }}
   annotations:
-    {{- with .Values.additionalAnnotations }}
     {{- toYaml . | nindent 4 }}
-    {{- end }}
-    {{- with .Values.provider.annotations }}
-    {{- toYaml . | nindent 4 }}
-    {{- end }}
   {{- end }}
   labels:
     {{- include "virtual-kubelet-saladcloud.labels" . | nindent 4 }}
-    {{- with .Values.additionalLabels }}
-    {{- toYaml . | nindent 4 }}
-    {{- end }}
-    app: {{ .Values.provider.name }}
-    name: {{ .Values.provider.name }}
-    app.kubernetes.io/component: kubelet
-    app.kubernetes.io/name: {{ .Values.provider.name }}
-  name: {{ .Values.provider.name }}
+  name: {{ include "virtual-kubelet-saladcloud.fullName" . }}
   namespace: {{ .Release.Namespace }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: {{ .Values.provider.name }}
+      {{- include "virtual-kubelet-saladcloud.matchLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- if or .Values.additionalAnnotations .Values.provider.annotations }}
+      {{- with .Values.provider.podAnnotations }}
       annotations:
-        {{- with .Values.additionalAnnotations }}
         {{- toYaml . | nindent 8 }}
-        {{- end }}
-        {{- with .Values.provider.annotations }}
-        {{- toYaml . | nindent 8 }}
-        {{- end }}
       {{- end }}
       labels:
         {{- include "virtual-kubelet-saladcloud.labels" . | nindent 8 }}
-        {{- with .Values.additionalLabels }}
-        {{- toYaml . | nindent 8 }}
-        {{- end }}
-        app: {{ .Values.provider.name }}
-        name: {{ .Values.provider.name }}
-        app.kubernetes.io/component: kubelet
-        app.kubernetes.io/name: {{ .Values.provider.name }}
     spec:
       containers:
-        - name: {{ .Values.provider.name }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+        - name: {{ template "virtual-kubelet-saladcloud.name" . }}
+          {{- if .Values.provider.image.digest }}
+          image: "{{ .Values.provider.image.repository }}@{{ .Values.provider.image.digest }}"
+          {{- else }}
+          image: "{{ .Values.provider.image.repository }}:{{ default .Chart.AppVersion .Values.provider.image.tag }}"
+          {{- end }}
+          imagePullPolicy: {{ .Values.provider.image.pullPolicy }}
           command:
             - "virtual-kubelet"
           args:
             - "--nodename"
-            - "{{ required "nodename is required" .Values.provider.nodename }}"
+            - "{{ required "provider.nodename is required" .Values.provider.nodename }}"
+            - "--sce-api-key"
+            - "{{ required "salad.apiKey is required" .Values.salad.apiKey }}"
+            - "--sce-organization-name"
+            - "{{ required "salad.organizationName is required" .Values.salad.organizationName }}"
+            - "--sce-project-name"
+            - "{{ required "salad.projectName is required" .Values.salad.projectName }}"
             {{- if not .Values.provider.taintEnabled }}
             - "--disable-taint"
             - "true"
@@ -64,19 +50,13 @@ spec:
             - "--log-level"
             - "{{.Values.provider.logLevel}}"
             {{- end }}
-            - "--sce-api-key"
-            - "{{ .Values.salad.apiKey }}"
-            - "--sce-organization-name"
-            - "{{ .Values.salad.organizationName }}"
-            - "--sce-project-name"
-            - "{{ .Values.salad.projectName }}"
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       nodeSelector:
         kubernetes.io/os: linux
-        {{- with .Values.nodeSelector }}
+        {{- with .Values.provider.nodeSelector }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
-      serviceAccountName: {{ .Values.serviceAccount.name }}
+      serviceAccountName: {{ include "virtual-kubelet-saladcloud.serviceAccountName" . }}
