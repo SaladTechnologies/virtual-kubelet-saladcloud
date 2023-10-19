@@ -42,13 +42,13 @@ func defaultInputs() models.InputVars {
 	}
 
 	return models.InputVars{
-		NodeName:         "saladcloud-edge-provider",
+		NodeName:         "saladcloud-node",
 		KubeConfig:       kubeConfig,
 		LogLevel:         "info",
 		OrganizationName: "",
 		TaintKey:         "virtual-kubelet.io/provider",
 		TaintEffect:      "NoSchedule",
-		TaintValue:       "saladCloud",
+		TaintValue:       "saladcloud",
 		ProjectName:      "",
 		ApiKey:           "",
 	}
