@@ -66,7 +66,7 @@ Return a fully qualified `ClusterRole` and `ClusterRoleBinding` name.
 Return a fully qualified `ServiceAccount` name.
 */}}
 {{- define "virtual-kubelet-saladcloud.serviceAccountName" -}}
-{{- if .Values.serviceAccounts.create -}}
+{{- if .Values.serviceAccount.create -}}
 {{- default (include "virtual-kubelet-saladcloud.fullName" .) .Values.serviceAccountNameOverride -}}
 {{- else -}}
 {{- default "default" .Values.serviceAccountNameOverride -}}

@@ -11,7 +11,7 @@ fullNameOverride: ""
 imagePullSecrets: []
 
 # -- The SaladCloud Virtual Kubelet Provider name.
-name: virtual-kubelet
+name: provider
 
 # -- When set to a non-empty value, overrides the `virtual-kubelet-saladcloud.name` value.
 nameOverride: ""

@@ -24,7 +24,7 @@ spec:
         {{- include "virtual-kubelet-saladcloud.labels" . | nindent 8 }}
     spec:
       containers:
-        - name: {{ template "virtual-kubelet-saladcloud.name" . }}
+        - name: {{ template "virtual-kubelet-saladcloud.name" . }}-{{ .Values.name }}
           {{- if .Values.provider.image.digest }}
           image: "{{ .Values.provider.image.repository }}@{{ .Values.provider.image.digest }}"
           {{- else }}
