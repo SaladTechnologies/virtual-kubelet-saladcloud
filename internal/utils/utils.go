@@ -1,6 +1,11 @@
 package utils
 
 import (
+	"bytes"
+	"fmt"
+	"io"
+	"net/http"
+
 	saladclient "github.com/lucklypriyansh-2/salad-client"
 	corev1 "k8s.io/api/core/v1"
 )
@@ -72,4 +77,19 @@ func GetPodPhaseFromContainerGroupState(containerGroupState saladclient.Containe
 
 	return ""
 
+}
+
+func GetResponseBody(response *http.Response) (*saladclient.ProblemDetails, error) {
+	// Get response body for error info
+	body, _ := io.ReadAll(response.Body)
+	response.Body.Close()
+	response.Body = io.NopCloser(bytes.NewBuffer(body))
+
+	// Get a ProblemDetails struct from the body
+	pd := saladclient.NewNullableProblemDetails(nil)
+	err := pd.UnmarshalJSON(body)
+	if err != nil {
+		return nil, fmt.Errorf("Error decoding response body: %s", response.Body)
+	}
+	return pd.Get(), nil
 }
