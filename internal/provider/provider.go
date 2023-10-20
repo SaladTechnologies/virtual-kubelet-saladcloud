@@ -1,7 +1,6 @@
 package provider
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"io"
@@ -119,23 +118,19 @@ func (p *SaladCloudProvider) CreatePod(ctx context.Context, pod *corev1.Pod) err
 	).Execute()
 	if err != nil {
 		// Get response body for error info
-		body, _ := io.ReadAll(r.Body)
-		r.Body.Close()
-		r.Body = io.NopCloser(bytes.NewBuffer(body))
-		pd := saladclient.NewNullableProblemDetails(nil)
-		err = pd.UnmarshalJSON(body)
+		pd, err := utils.GetResponseBody(r)
 		if err != nil {
-			p.logger.Errorf("Error decoding return body: %s", r.Body)
+			p.logger.Errorf("CreatePod: %s", err)
 			return err
 		}
 
 		// Also handle 403 and 429?
 		if r.StatusCode == 400 {
-			if *pd.Get().Type.Get() == "name_conflict" {
+			if *pd.Type.Get() == "name_conflict" {
 				// The exciting duplicate name condition!
 				p.logger.Errorf("Name %s has already been used in provider project %s/%s", pod.Name, p.inputVars.OrganizationName, p.inputVars.ProjectName)
 			} else {
-				p.logger.Errorf("Error type %s in `ContainerGroupsAPI.CreateContainerGroupModel`", *pd.Get().Type.Get())
+				p.logger.Errorf("Error type %s in `ContainerGroupsAPI.CreateContainerGroupModel`", *pd.Type.Get())
 			}
 		} else {
 			p.logger.Errorf("Error when calling `ContainerGroupsAPI.CreateContainerGroupModel`", r)
@@ -148,8 +143,15 @@ func (p *SaladCloudProvider) CreatePod(ctx context.Context, pod *corev1.Pod) err
 
 	startHttpResponse, err := p.apiClient.ContainerGroupsAPI.StartContainerGroup(p.contextWithAuth(), p.inputVars.OrganizationName, p.inputVars.ProjectName, utils.GetPodName(pod.Namespace, pod.Name, nil)).Execute()
 	if err != nil {
-		p.logger.Errorf("Error when calling `ContainerGroupsAPI.StartContainerGroup`", startHttpResponse)
-		err := p.DeletePod(ctx, pod)
+		// Get response body for error info
+		pd, err := utils.GetResponseBody(startHttpResponse)
+		if err != nil {
+			p.logger.Errorf("`ContainerGroupsAPI.StartContainerGroup`: %s", err)
+			return err
+		}
+
+		p.logger.Errorf("`ContainerGroupsAPI.StartContainerGroup`: Error: %+v", *pd)
+		err = p.DeletePod(ctx, pod)
 		if err != nil {
 			return err
 		}
@@ -185,7 +187,7 @@ func (p *SaladCloudProvider) CreatePod(ctx context.Context, pod *corev1.Pod) err
 		})
 	}
 
-	p.logger.Infof("Done creating the container and initiating  the startup ", pod)
+	p.logger.Infof("Container %s created and initialized", pod.Name)
 	return nil
 }
 
@@ -196,12 +198,19 @@ func (p *SaladCloudProvider) UpdatePod(ctx context.Context, pod *corev1.Pod) err
 func (p *SaladCloudProvider) DeletePod(ctx context.Context, pod *corev1.Pod) error {
 	_, span := trace.StartSpan(ctx, "DeletePod")
 	defer span.End()
-	p.logger.Debug("deleting a pod")
+	p.logger.Debugf("Deleting pod %s", utils.GetPodName(pod.Namespace, pod.Name, pod))
 	response, err := p.apiClient.ContainerGroupsAPI.DeleteContainerGroup(p.contextWithAuth(), p.inputVars.OrganizationName, p.inputVars.ProjectName, utils.GetPodName(pod.Namespace, pod.Name, pod)).Execute()
 	pod.Status.Phase = corev1.PodSucceeded
 	pod.Status.Reason = "Pod Deleted"
 	if err != nil {
-		p.logger.Errorf("Error when deleting the container ", response)
+		// Get response body for error info
+		pd, err := utils.GetResponseBody(response)
+		if err != nil {
+			p.logger.Errorf("`ContainerGroupsAPI.DeletePod`: %s", err)
+			return err
+		}
+
+		p.logger.Errorf("`ContainerGroupsAPI.DeletePod`: Error: %+v", *pd)
 		return err
 	}
 	now := metav1.Now()
@@ -214,8 +223,8 @@ func (p *SaladCloudProvider) DeletePod(ctx context.Context, pod *corev1.Pod) err
 				Reason:     "Salad Provider Pod Deleted",
 			},
 		}
+		p.logger.Infof("Container %s deleted", pod.Status.ContainerStatuses[idx].Name)
 	}
-	p.logger.Infof("Done deleting the container ", pod)
 	return nil
 }
 
@@ -223,7 +232,18 @@ func (p *SaladCloudProvider) GetPod(ctx context.Context, namespace string, name 
 
 	resp, r, err := saladclient.NewAPIClient(saladclient.NewConfiguration()).ContainerGroupsAPI.GetContainerGroup(p.contextWithAuth(), p.inputVars.OrganizationName, p.inputVars.ProjectName, utils.GetPodName(namespace, name, nil)).Execute()
 	if err != nil {
-		p.logger.Errorf("Error when calling `ContainerGroupsAPI.GetPod`", r)
+		// Get response body for error info
+		pd, err := utils.GetResponseBody(r)
+		if err != nil {
+			p.logger.Errorf("`ContainerGroupsAPI.GetPod`: %s", err)
+			return nil, err
+		}
+
+		if r.StatusCode == 404 {
+			p.logger.Warnf("`ContainerGroupsAPI.GetPod`: %s not found", name)
+		} else {
+			p.logger.Errorf("`ContainerGroupsAPI.GetPod`: Error: %+v", *pd)
+		}
 		return nil, err
 	}
 	startTime := metav1.NewTime(resp.CreateTime)
@@ -270,14 +290,10 @@ func (p *SaladCloudProvider) GetPodStatus(ctx context.Context, namespace string,
 	containerGroup, response, err := p.apiClient.ContainerGroupsAPI.GetContainerGroup(p.contextWithAuth(), p.inputVars.OrganizationName, p.inputVars.ProjectName, utils.GetPodName(namespace, name, nil)).Execute()
 	if err != nil {
 		// Get response body for error info
-		body, _ := io.ReadAll(response.Body)
-		response.Body.Close()
-		response.Body = io.NopCloser(bytes.NewBuffer(body))
-		pd := saladclient.NewNullableProblemDetails(nil)
-		err = pd.UnmarshalJSON(body)
+		pd, err := utils.GetResponseBody(response)
 		if err != nil {
-			p.logger.Errorf("Error decoding return body: %s", response.Body)
-			return nil, models.NewSaladCloudError(err, response)
+			p.logger.Errorf("GetPodStatus: %s", err)
+			return nil, err
 		}
 
 		if response.StatusCode == 404 {
@@ -287,7 +303,7 @@ func (p *SaladCloudProvider) GetPodStatus(ctx context.Context, namespace string,
 		} else {
 			p.logger.WithField("namespace", namespace).
 				WithField("name", name).
-				Errorf("ContainerGroupsAPI.GetPodStatus ", body)
+				Errorf("ContainerGroupsAPI.GetPodStatus: %+v ", *pd)
 		}
 		return nil, models.NewSaladCloudError(err, response)
 	}
@@ -310,7 +326,14 @@ func (p *SaladCloudProvider) GetPodStatus(ctx context.Context, namespace string,
 func (p *SaladCloudProvider) GetPods(ctx context.Context) ([]*corev1.Pod, error) {
 	resp, r, err := p.apiClient.ContainerGroupsAPI.ListContainerGroups(p.contextWithAuth(), p.inputVars.OrganizationName, p.inputVars.ProjectName).Execute()
 	if err != nil {
-		p.logger.Errorf("Error when list ContainerGroupsAPI.ListContainerGroups ", r)
+		// Get response body for error info
+		pd, err := utils.GetResponseBody(r)
+		if err != nil {
+			p.logger.Errorf("GetPods: %s", err)
+			return nil, err
+		}
+
+		p.logger.Errorf("`ContainerGroupsAPI.GetPods`: Error: %+v", *pd)
 		return nil, err
 	}
 	pods := make([]*corev1.Pod, 0)
