@@ -1,8 +1,14 @@
 package provider
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"io"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/SaladTechnologies/virtual-kubelet-saladcloud/internal/models"
 	"github.com/SaladTechnologies/virtual-kubelet-saladcloud/internal/utils"
 	"github.com/google/uuid"
@@ -14,14 +20,10 @@ import (
 	"github.com/virtual-kubelet/virtual-kubelet/node/api/statsv1alpha1"
 	"github.com/virtual-kubelet/virtual-kubelet/node/nodeutil"
 	"github.com/virtual-kubelet/virtual-kubelet/trace"
-	"io"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	corev1listers "k8s.io/client-go/listers/core/v1"
-	"strconv"
-	"strings"
-	"time"
 )
 
 type SaladCloudProvider struct {
@@ -116,7 +118,28 @@ func (p *SaladCloudProvider) CreatePod(ctx context.Context, pod *corev1.Pod) err
 		createContainerGroup[0],
 	).Execute()
 	if err != nil {
-		p.logger.Errorf("Error when calling `ContainerGroupsAPI.CreateContainerGroupModel`", r)
+		// Get response body for error info
+		body, _ := io.ReadAll(r.Body)
+		r.Body.Close()
+		r.Body = io.NopCloser(bytes.NewBuffer(body))
+		pd := saladclient.NewNullableProblemDetails(nil)
+		err = pd.UnmarshalJSON(body)
+		if err != nil {
+			p.logger.Errorf("Error decoding return body: %s", r.Body)
+			return err
+		}
+
+		// Also handle 403 and 429?
+		if r.StatusCode == 400 {
+			if *pd.Get().Type.Get() == "name_conflict" {
+				// The exciting duplicate name condition!
+				p.logger.Errorf("Name %s has already been used in provider project %s/%s", pod.Name, p.inputVars.OrganizationName, p.inputVars.ProjectName)
+			} else {
+				p.logger.Errorf("Error type %s in `ContainerGroupsAPI.CreateContainerGroupModel`", *pd.Get().Type.Get())
+			}
+		} else {
+			p.logger.Errorf("Error when calling `ContainerGroupsAPI.CreateContainerGroupModel`", r)
+		}
 		return err
 	}
 
@@ -125,7 +148,7 @@ func (p *SaladCloudProvider) CreatePod(ctx context.Context, pod *corev1.Pod) err
 
 	startHttpResponse, err := p.apiClient.ContainerGroupsAPI.StartContainerGroup(p.contextWithAuth(), p.inputVars.OrganizationName, p.inputVars.ProjectName, utils.GetPodName(pod.Namespace, pod.Name, nil)).Execute()
 	if err != nil {
-		p.logger.Errorf("Error when calling `ContainerGroupsAPI.CreateContainerGroupModel`", startHttpResponse)
+		p.logger.Errorf("Error when calling `ContainerGroupsAPI.StartContainerGroup`", startHttpResponse)
 		err := p.DeletePod(ctx, pod)
 		if err != nil {
 			return err
@@ -246,9 +269,26 @@ func (p *SaladCloudProvider) GetPodStatus(ctx context.Context, namespace string,
 
 	containerGroup, response, err := p.apiClient.ContainerGroupsAPI.GetContainerGroup(p.contextWithAuth(), p.inputVars.OrganizationName, p.inputVars.ProjectName, utils.GetPodName(namespace, name, nil)).Execute()
 	if err != nil {
-		p.logger.WithField("namespace", namespace).
-			WithField("name", name).
-			Errorf("ContainerGroupsAPI.GetPodStatus ", response)
+		// Get response body for error info
+		body, _ := io.ReadAll(response.Body)
+		response.Body.Close()
+		response.Body = io.NopCloser(bytes.NewBuffer(body))
+		pd := saladclient.NewNullableProblemDetails(nil)
+		err = pd.UnmarshalJSON(body)
+		if err != nil {
+			p.logger.Errorf("Error decoding return body: %s", response.Body)
+			return nil, models.NewSaladCloudError(err, response)
+		}
+
+		if response.StatusCode == 404 {
+			p.logger.WithField("namespace", namespace).
+				WithField("name", name).
+				Warnf("Not Found")
+		} else {
+			p.logger.WithField("namespace", namespace).
+				WithField("name", name).
+				Errorf("ContainerGroupsAPI.GetPodStatus ", body)
+		}
 		return nil, models.NewSaladCloudError(err, response)
 	}
 
