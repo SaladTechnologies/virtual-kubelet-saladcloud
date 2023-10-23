@@ -7,7 +7,7 @@ require (
 	github.com/prometheus/client_model v0.5.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/virtual-kubelet/virtual-kubelet v1.10.0
-	k8s.io/api v0.28.2
+	k8s.io/api v0.28.3
 )
 
 require (
