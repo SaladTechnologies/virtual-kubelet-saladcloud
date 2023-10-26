@@ -1,4 +1,6 @@
-* @SaladTechnologies/admins @SaladTechnologies/virtual-kubelet-maintainers @lucklypriyansh-2
+* @SaladTechnologies/virtual-kubelet-maintainers
 
-# Administrators must approve changes to the code owners.
-CODEOWNERS @SaladTechnologies/admins
+# Administrators must approve changes to license and code owners (and other GitHub-specific resources).
+/.github/ @SaladTechnologies/admins
+/LICENSE @SaladTechnologies/admins
+/NOTICE @SaladTechnologies/admins

@@ -39,9 +39,6 @@ go.work
 # Built Visual Studio Code Extensions
 *.vsix
 
-## Jetbrains IDE
-.idea
-
 ## Custom Rules
 
 bin/
