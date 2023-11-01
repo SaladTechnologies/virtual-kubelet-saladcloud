@@ -49,7 +49,7 @@ func GetPodName(nameSpace, containerGroup string, pod *corev1.Pod) string {
 	if nameSpace == "" && containerGroup == "" && pod.Spec.Containers[0].Name != "" {
 		return pod.Spec.Containers[0].Name
 	}
-	return "salad-cloud-" + nameSpace + "-" + containerGroup
+	return nameSpace + "-" + containerGroup
 }
 
 func GetPodPhaseFromContainerGroupState(containerGroupState saladclient.ContainerGroupState) corev1.PodPhase {
