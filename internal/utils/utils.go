@@ -2,7 +2,6 @@ package utils
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"net/http"
 
@@ -89,7 +88,12 @@ func GetResponseBody(response *http.Response) (*saladclient.ProblemDetails, erro
 	pd := saladclient.NewNullableProblemDetails(nil)
 	err := pd.UnmarshalJSON(body)
 	if err != nil {
-		return nil, fmt.Errorf("Error decoding response body: %s", response.Body)
+		// Can't decode ProblemDetails, just make one and return the string
+		npd := saladclient.NewProblemDetails()
+		npd.SetType("unknown_error")
+		npd.SetTitle("Error decoding response body")
+		npd.SetDetail(string(body))
+		pd.Set(npd)
 	}
 	return pd.Get(), nil
 }
