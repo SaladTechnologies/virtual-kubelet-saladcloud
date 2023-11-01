@@ -229,8 +229,8 @@ func (p *SaladCloudProvider) DeletePod(ctx context.Context, pod *corev1.Pod) err
 }
 
 func (p *SaladCloudProvider) GetPod(ctx context.Context, namespace string, name string) (*corev1.Pod, error) {
-
-	resp, r, err := saladclient.NewAPIClient(saladclient.NewConfiguration()).ContainerGroupsAPI.GetContainerGroup(p.contextWithAuth(), p.inputVars.OrganizationName, p.inputVars.ProjectName, utils.GetPodName(namespace, name, nil)).Execute()
+	podname := utils.GetPodName(namespace, name, nil)
+	resp, r, err := saladclient.NewAPIClient(saladclient.NewConfiguration()).ContainerGroupsAPI.GetContainerGroup(p.contextWithAuth(), p.inputVars.OrganizationName, p.inputVars.ProjectName, podname).Execute()
 	if err != nil {
 		// Get response body for error info
 		pd, err := utils.GetResponseBody(r)
@@ -240,7 +240,7 @@ func (p *SaladCloudProvider) GetPod(ctx context.Context, namespace string, name 
 		}
 
 		if r.StatusCode == 404 {
-			p.logger.Warnf("`ContainerGroupsAPI.GetPod`: %s not found", name)
+			p.logger.Warnf("`ContainerGroupsAPI.GetPod`: %s not found", podname)
 		} else {
 			p.logger.Errorf("`ContainerGroupsAPI.GetPod`: Error: %+v", *pd)
 		}
@@ -287,7 +287,8 @@ func (p *SaladCloudProvider) GetPodStatus(ctx context.Context, namespace string,
 	_, span := trace.StartSpan(ctx, "GetPodStatus")
 	defer span.End()
 
-	containerGroup, response, err := p.apiClient.ContainerGroupsAPI.GetContainerGroup(p.contextWithAuth(), p.inputVars.OrganizationName, p.inputVars.ProjectName, utils.GetPodName(namespace, name, nil)).Execute()
+	podname := utils.GetPodName(namespace, name, nil)
+	containerGroup, response, err := p.apiClient.ContainerGroupsAPI.GetContainerGroup(p.contextWithAuth(), p.inputVars.OrganizationName, p.inputVars.ProjectName, podname).Execute()
 	if err != nil {
 		// Get response body for error info
 		pd, err := utils.GetResponseBody(response)
@@ -298,7 +299,7 @@ func (p *SaladCloudProvider) GetPodStatus(ctx context.Context, namespace string,
 
 		if response.StatusCode == 404 {
 			p.logger.WithField("namespace", namespace).
-				WithField("name", name).
+				WithField("name", podname).
 				Warnf("Not Found")
 		} else {
 			p.logger.WithField("namespace", namespace).
