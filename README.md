@@ -18,6 +18,11 @@ The SaladCloud Virtual Kubelet Provider creates a _virtual node_ in your K8s clu
 
 To the K8s API, it looks like a real node. However, when you schedule a pod on the virtual node, a container group deployment is created using the SaladCloud API instead of running the pod on a node in the K8s cluster. The container group deployment runs the pod on a remote, GPU-enabled node on the SaladCloud network.
 
+## Demo
+
+This was used in a presentation at KubeCon2023, the script and pod spec file for the QR code workload are in
+the [demo](demo) directory.
+
 ## Development
 
 Follow the steps below to get started with local development.
