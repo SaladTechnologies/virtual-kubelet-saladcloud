@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: qr-code-demo
+  name: qr-code
+  namespace: saladcloud-demo
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: qr-code-demo
+  template:
+    metadata:
+      annotations:
+        salad.com/country-codes: us
+        salad.com/networking-protocol: "http"
+        salad.com/networking-port: "1234"
+        salad.com/networking-auth: "false"
+        salad.com/gpu-classes: "dec851b7-eba7-4457-a319-a01b611a810e"
+        # salad.com/gpu-classes: "cb6c1931-89b6-4f76-976f-54047320ccc6"
+      labels:
+        app: qr-code-demo
+    spec:
+      containers:
+        - image: saladtechnologies/stable-fast-qr-code:latest-baked
+          name: qr-code
+          resources:
+            limits:
+              cpu: 2
+              memory: 8192
+          env:
+            - name: HOST
+              value: "*"
+            - name: PORT
+              value: "1234"
+          startupProbe:
+            exec:
+              command: [ "curl", "--fail", "http://localhost:1234/hc" ]
+            initialDelaySeconds: 60
+            failureThreshold: 60
+            periodSeconds: 10
+          livenessProbe:
+            exec:
+              command: [ "curl", "--fail", "http://localhost:1234/hc" ]
+            initialDelaySeconds: 60
+            failureThreshold: 60
+            periodSeconds: 10
+      nodeSelector:
+        kubernetes.io/role: agent
+        type: virtual-kubelet
+      os:
+        name: linux
+      restartPolicy: Always
+      tolerations:
+        - key: virtual-kubelet.io/provider
+          operator: Equal
+          value: saladcloud
+          effect: NoSchedule
