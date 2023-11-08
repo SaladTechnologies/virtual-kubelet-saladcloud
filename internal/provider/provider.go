@@ -105,7 +105,7 @@ func (p *SaladCloudProvider) NotifyPods(ctx context.Context, notifierCallback fu
 func (p *SaladCloudProvider) CreatePod(ctx context.Context, pod *corev1.Pod) error {
 	ctx, span := trace.StartSpan(ctx, "CreatePod")
 	defer span.End()
-	p.logger.Debug("creating a CreatePod", pod.Name)
+	p.logger.Debugf("CreatePod: ", pod.Name)
 	createContainerObject := p.createContainersObject(pod)
 	createContainerGroup := p.createContainerGroup(createContainerObject, pod)
 
@@ -192,6 +192,7 @@ func (p *SaladCloudProvider) CreatePod(ctx context.Context, pod *corev1.Pod) err
 }
 
 func (p *SaladCloudProvider) UpdatePod(ctx context.Context, pod *corev1.Pod) error {
+	p.logger.Debugf("UpdatePod: %s: %+v", utils.GetPodName(pod.Namespace, pod.Name, pod), pod)
 	return nil
 }
 
