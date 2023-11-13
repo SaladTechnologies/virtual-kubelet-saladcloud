@@ -6,7 +6,7 @@ metadata:
   name: qr-code
   namespace: saladcloud-demo
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: qr-code-demo
@@ -26,9 +26,12 @@ spec:
         - image: saladtechnologies/stable-fast-qr-code:latest-baked
           name: qr-code
           resources:
+            requests:
+              cpu: 2
+              memory: 8Gi
             limits:
               cpu: 2
-              memory: 8192
+              memory: 8Gi
           env:
             - name: HOST
               value: "*"
