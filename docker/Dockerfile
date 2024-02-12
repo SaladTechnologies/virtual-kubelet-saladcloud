@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM golang:1.21.6-alpine3.18 AS build
+FROM golang:1.22.0-alpine3.18 AS build
 WORKDIR /app
 ARG VERSION_FLAGS=-ldflags=
 
