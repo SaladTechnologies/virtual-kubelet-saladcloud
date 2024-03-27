@@ -6,7 +6,7 @@
   <a href="https://github.com/SaladTechnologies/virtual-kubelet-saladcloud"><img alt="SaladCloud Virtual Kubelet Provider" src="./images/saladcloud-virtual-kubelet-banner.png" width="100%" /></a>
 </center>
 
-Salad's Virtual Kubelet (VK) provider for SaladCloud enables running Kubernetes (K8s) pods as SaladCloud Container Group deployments.
+Salad's Virtual Kubelet (VK) provider for SaladCloud enables running Kubernetes (K8s) pods as SaladCloud Container Group deployments. This prototype is currently in development, and not production ready yet.  If you are interested, please reach out to us to discuss your specific needs.
 
 ## How it Works
 
