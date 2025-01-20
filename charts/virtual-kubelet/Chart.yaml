@@ -11,7 +11,7 @@ keywords:
   - virtual-kubelet
   - virtual-kubelet-provider
   - vk
-kubeVersion: ">=v1.26.0-0"
+kubeVersion: ">=v1.29.0-0"
 maintainers:
   - email: dev@salad.com
     name: Salad Chefs
@@ -20,4 +20,4 @@ name: virtual-kubelet-saladcloud
 sources:
   - https://github.com/SaladTechnologies/virtual-kubelet-saladcloud
 type: application
-version: 0.1.0
+version: 0.2.0

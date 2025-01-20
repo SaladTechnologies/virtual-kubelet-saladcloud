@@ -16,13 +16,13 @@ import (
 	dto "github.com/prometheus/client_model/go"
 	"github.com/virtual-kubelet/virtual-kubelet/log"
 	nodeapi "github.com/virtual-kubelet/virtual-kubelet/node/api"
-	"github.com/virtual-kubelet/virtual-kubelet/node/api/statsv1alpha1"
 	"github.com/virtual-kubelet/virtual-kubelet/node/nodeutil"
 	"github.com/virtual-kubelet/virtual-kubelet/trace"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	corev1listers "k8s.io/client-go/listers/core/v1"
+	stats "k8s.io/kubelet/pkg/apis/stats/v1alpha1"
 )
 
 type SaladCloudProvider struct {
@@ -383,7 +383,7 @@ func (p *SaladCloudProvider) AttachToContainer(ctx context.Context, namespace, p
 	return nil
 }
 
-func (p *SaladCloudProvider) GetStatsSummary(context.Context) (*statsv1alpha1.Summary, error) {
+func (p *SaladCloudProvider) GetStatsSummary(context.Context) (*stats.Summary, error) {
 	return nil, nil
 }
 

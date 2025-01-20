@@ -2,7 +2,7 @@ name: Stale
 
 on:
   schedule:
-    - cron: "0 * * * *"
+    - cron: "0 10 * * *"
 
 permissions:
   contents: write
@@ -13,8 +13,8 @@ jobs:
   stale:
     runs-on: ubuntu-latest
     steps:
-      - name: 30 days stale policy
-        uses: actions/stale@v8
+      - name: Apply stale policy
+        uses: actions/stale@v9
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           days-before-stale: 30
@@ -31,7 +31,7 @@ jobs:
             Issues with the labels `no-stale`, `help wanted`, and `good first issue` are exempt from this policy.
 
           stale-pr-label: "stale"
-          exempt-pr-labels: "no-stale"
+          exempt-pr-labels: "no-stale,dependencies"
           stale-pr-message: >
             There hasn't been any activity on this pull request in 30 days.
 
