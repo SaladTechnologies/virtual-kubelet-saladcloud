@@ -19,7 +19,7 @@ Return the common labels used by components.
 app.kubernetes.io/component: kubelet
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 app.kubernetes.io/part-of: {{ include "virtual-kubelet-saladcloud.name" . }}
-app.kubernetes.io/version: {{ .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | default .Chart.Version }}
 helm.sh/chart: {{ include "virtual-kubelet-saladcloud.chart" . }}
 {{ include "virtual-kubelet-saladcloud.matchLabels" . }}
 {{- with .Values.additionalLabels -}}
