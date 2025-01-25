@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: web-demo
+  name: web
+  namespace: saladcloud-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-demo
+  template:
+    metadata:
+      annotations:
+        salad.com/country-codes: us
+        salad.com/networking-protocol: "http"
+        salad.com/networking-port: "80"
+        salad.com/networking-auth: "false"
+        salad.com/gpu-classes: "dec851b7-eba7-4457-a319-a01b611a810e"
+        salad.com/container-group-priority: "high"
+      labels:
+        app: web-demo
+    spec:
+      containers:
+        - image: httpd
+          name: web
+          resources:
+            requests:
+              cpu: "1"
+              memory: 8Gi
+            limits:
+              cpu: "1"
+              memory: 8Gi
+      nodeSelector:
+        kubernetes.io/role: agent
+        type: virtual-kubelet
+      os:
+        name: linux
+      restartPolicy: Always
+      tolerations:
+        - key: virtual-kubelet.io/provider
+          operator: Equal
+          value: saladcloud
+          effect: NoSchedule

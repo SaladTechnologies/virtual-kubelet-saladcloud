@@ -5,14 +5,15 @@ go 1.23.0
 toolchain go1.23.5
 
 require (
+	github.com/SaladTechnologies/salad-client v0.9.0-alpha.6
 	github.com/google/uuid v1.6.0
-	github.com/lucklypriyansh-2/salad-client v0.0.0-20231005114315-47f7f0403e30
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_model v0.6.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.8.1
 	github.com/virtual-kubelet/virtual-kubelet v1.11.1-0.20250117201309-5c534ffcd607
+	golang.org/x/text v0.21.0
 	k8s.io/api v0.32.1
 	k8s.io/apimachinery v0.32.1
 	k8s.io/client-go v0.32.1
@@ -92,7 +93,6 @@ require (
 	golang.org/x/sync v0.10.0 // indirect
 	golang.org/x/sys v0.29.0 // indirect
 	golang.org/x/term v0.28.0 // indirect
-	golang.org/x/text v0.21.0 // indirect
 	golang.org/x/time v0.9.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250115164207-1a7da9e5054f // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250115164207-1a7da9e5054f // indirect
