@@ -31,7 +31,7 @@ func GetPodResource(podSpec corev1.PodSpec) (cpu int64, memory int64) {
 		cpuValue := container.Resources.Requests.Cpu().MilliValue() / 1000
 		cpu += roundUpToNearest(cpuValue, allowedCPUValues)
 
-		// Convert bytes to gibibytes (MiB) and ensure it's a multiple of 1 Gi (1 Gi = 1024*1024 bytes)
+		// Convert bytes to gibibytes (GiB) and ensure it's a multiple of 1 GiB (1 GiB = 1024*1024 bytes)
 		memValue := container.Resources.Requests.Memory().Value() / (1024 * 1024)
 		memory += roundUpToNearest(memValue, allowedMemoryValues)
 	}
