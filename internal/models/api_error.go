@@ -24,8 +24,16 @@ func NewSaladCloudError(err error, response *http.Response) error {
 	if response == nil {
 		return err
 	}
-	return &APIError{
-		StatusCode: response.StatusCode,
-		Message:    err.Error(),
+
+	if err == nil {
+		return &APIError{
+			StatusCode: response.StatusCode,
+			Message:    "",
+		}
+	} else {
+		return &APIError{
+			StatusCode: response.StatusCode,
+			Message:    err.Error(),
+		}
 	}
 }
