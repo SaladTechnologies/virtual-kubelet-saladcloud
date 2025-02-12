@@ -3,6 +3,9 @@ package provider
 import (
 	"context"
 	"errors"
+	"net/http"
+	"time"
+
 	"github.com/SaladTechnologies/virtual-kubelet-saladcloud/internal/models"
 	"github.com/SaladTechnologies/virtual-kubelet-saladcloud/internal/utils"
 	"github.com/virtual-kubelet/virtual-kubelet/log"
@@ -10,8 +13,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	corev1listers "k8s.io/client-go/listers/core/v1"
-	"net/http"
-	"time"
 )
 
 // Define the intervals for pod status updates and stale pod cleanup

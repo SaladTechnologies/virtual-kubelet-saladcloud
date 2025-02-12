@@ -5,12 +5,13 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 	"io"
 	"strconv"
 	"strings"
 	"time"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 
 	saladclient "github.com/SaladTechnologies/salad-client"
 	"github.com/SaladTechnologies/virtual-kubelet-saladcloud/internal/models"
@@ -109,7 +110,7 @@ func (p *SaladCloudProvider) NotifyPods(ctx context.Context, notifierCallback fu
 }
 
 func (p *SaladCloudProvider) CreatePod(ctx context.Context, pod *corev1.Pod) error {
-	ctx, span := trace.StartSpan(ctx, "CreatePod")
+	_, span := trace.StartSpan(ctx, "CreatePod")
 	defer span.End()
 	p.logger.Infof("CreatePod: %s", pod.Name)
 	createContainerObject := p.createContainersObject(pod)
