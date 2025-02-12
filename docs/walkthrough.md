@@ -2,7 +2,6 @@
 
 *[Note:  This document is a work-in-progress and is lacking certain content, such as auth for a real K8s cluster is not called out yet.*
 
-
 The virtual-kubelet project enables external API-controlled resources to be made available to a Kubernetes cluster by implementing the Kubelet API.
 
 This document steps through using Salad’s virtual-kubelet-saladcloud (https://github.com/SaladTechnologies/virtual-kubelet-saladcloud) (SCVK) project to connect to Salad Compute Engine (SCE).  It will enable control of SCE Container Groups from the K8s control plane.
@@ -142,7 +141,7 @@ See below for how to get the GPU class UUIDs
 ### Annotations
 
 **GPU Classes**
-    
+
 SCE defines a number of GPU classes that describe the available GPU classes.  The SCE API unfortuantely only accepts UUIDs for those values and the portal web UI does not display these.  Retrieve the full list directly from the API using curl:
 
 ```yaml

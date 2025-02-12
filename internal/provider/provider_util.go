@@ -2,6 +2,7 @@ package provider
 
 import (
 	"errors"
+
 	"github.com/SaladTechnologies/virtual-kubelet-saladcloud/internal/models"
 	corev1 "k8s.io/api/core/v1"
 )

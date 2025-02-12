@@ -39,13 +39,13 @@ spec:
               value: "1234"
           startupProbe:
             exec:
-              command: [ "curl", "--fail", "http://localhost:1234/hc" ]
+              command: ["curl", "--fail", "http://localhost:1234/hc"]
             initialDelaySeconds: 60
             failureThreshold: 60
             periodSeconds: 10
           livenessProbe:
             exec:
-              command: [ "curl", "--fail", "http://localhost:1234/hc" ]
+              command: ["curl", "--fail", "http://localhost:1234/hc"]
             initialDelaySeconds: 60
             failureThreshold: 60
             periodSeconds: 10

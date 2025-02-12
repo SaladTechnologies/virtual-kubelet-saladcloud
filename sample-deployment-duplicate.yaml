@@ -58,7 +58,7 @@ spec:
             initialDelaySeconds: 12
             periodSeconds: 1
             timeoutSeconds: 1
-            failureThreshold: 1  # Mapping failure_threshold
+            failureThreshold: 1 # Mapping failure_threshold
           startupProbe:
             httpGet:
               path: "/path-1"
