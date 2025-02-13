@@ -30,7 +30,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            saladtechnologies/virtual-kubelet-saladcloud
+            ghcr.io/saladtechnologies/virtual-kubelet-saladcloud
           labels: |
             org.opencontainers.image.title=SaladCloud Virtual Kubelet Provider
             org.opencontainers.image.description=Enables running Kubernetes pods remotely on SaladCloud
