@@ -3,10 +3,11 @@
 .vscode/
 bin/
 charts/
+demo/
 docker/
+docs/
 images/
 **/.gitignore
-**/*Dockerfile*
 .dockerignore
 .editorconfig
 .gitattributes
