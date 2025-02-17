@@ -11,7 +11,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_model v0.6.1
 	github.com/sirupsen/logrus v1.9.3
-	github.com/spf13/cobra v1.8.1
+	github.com/spf13/cobra v1.9.1
 	github.com/virtual-kubelet/virtual-kubelet v1.11.1-0.20250117201309-5c534ffcd607
 	golang.org/x/text v0.22.0
 	k8s.io/api v0.32.1
@@ -67,7 +67,7 @@ require (
 	github.com/prometheus/client_golang v1.20.5 // indirect
 	github.com/prometheus/common v0.62.0 // indirect
 	github.com/prometheus/procfs v0.15.1 // indirect
-	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/spf13/pflag v1.0.6 // indirect
 	github.com/stoewer/go-strcase v1.3.0 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	go.etcd.io/etcd/api/v3 v3.5.17 // indirect
