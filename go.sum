@@ -4,8 +4,8 @@ cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMT
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/NYTimes/gziphandler v1.1.1 h1:ZUDjpQae29j0ryrS0u/B8HZfJBtBQHjqw2rQ2cqUQ3I=
 github.com/NYTimes/gziphandler v1.1.1/go.mod h1:n/CVRwUEOgIxrgPvAQhUUr9oeUtvrhMomdKFjzJNB0c=
-github.com/SaladTechnologies/salad-client v0.9.0-alpha.6 h1:v92xS6b6iA0XcOCGimGyZowmGRcQAoMNApcIJnqpIFg=
-github.com/SaladTechnologies/salad-client v0.9.0-alpha.6/go.mod h1:yeYIXFVocy5Hd1hdKVz4J9cibiOI3uCz5GZIpZ8TJdk=
+github.com/SaladTechnologies/salad-client v0.9.0-alpha.7 h1:hBK92SXouPPkVd/y54ufVDVtj+Il8yaMg8LtWybJj2s=
+github.com/SaladTechnologies/salad-client v0.9.0-alpha.7/go.mod h1:iUSj3EtS6PGDfQwFNQ4lYLbfM8QPyUijzlfePn+f0oc=
 github.com/antlr4-go/antlr/v4 v4.13.1 h1:SqQKkuVZ+zWkMMNkjy5FZe5mr5WURWnlpmOuzYWrPrQ=
 github.com/antlr4-go/antlr/v4 v4.13.1/go.mod h1:GKmUxMtwp6ZgGwZSva4eWPC5mS6vUAmOABFgjdkM7Nw=
 github.com/armon/go-socks5 v0.0.0-20160902184237-e75332964ef5 h1:0CwZNZbxp69SHPdPJAN/hZIm0C4OItdklCFmMRWYpio=

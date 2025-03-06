@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -134,12 +135,12 @@ func (p *SaladCloudProvider) CreatePod(ctx context.Context, pod *corev1.Pod) err
 		}
 
 		// Also handle 403 and 429?
-		if r.StatusCode == 400 {
-			if *pd.Type.Get() == "name_conflict" {
+		if r != nil && r.StatusCode == http.StatusBadRequest {
+			if *pd.Type == "name_conflict" {
 				// The exciting duplicate name condition!
 				p.logger.Errorf("Name %s has already been used in provider project %s/%s", pod.Name, p.inputVars.OrganizationName, p.inputVars.ProjectName)
 			} else {
-				p.logger.Errorf("Error type %s in `ContainerGroupsAPI.CreateContainerGroupModel`", *pd.Type.Get())
+				p.logger.Errorf("Error type %s in `ContainerGroupsAPI.CreateContainerGroupModel`", *pd.Type)
 			}
 		} else {
 			p.logger.Errorf("Error when calling `ContainerGroupsAPI.CreateContainerGroupModel`", r)
@@ -229,7 +230,7 @@ func (p *SaladCloudProvider) GetPod(_ context.Context, namespace string, name st
 			return nil, err
 		}
 
-		if r.StatusCode == 404 {
+		if r != nil && r.StatusCode == http.StatusNotFound {
 			p.logger.Warnf("`ContainerGroupsAPI.GetPod`: %s not found", podname)
 		} else {
 			p.logger.Errorf("`ContainerGroupsAPI.GetPod`: Error: %+v", *pd)
@@ -278,7 +279,9 @@ func (p *SaladCloudProvider) GetPodStatus(ctx context.Context, namespace string,
 	defer span.End()
 
 	podname := utils.GetPodName(namespace, name, nil)
-	containerGroup, response, err := p.apiClient.ContainerGroupsAPI.GetContainerGroup(p.contextWithAuth(), p.inputVars.OrganizationName, p.inputVars.ProjectName, podname).Execute()
+	containerGroup, response, err := p.apiClient.ContainerGroupsAPI.
+		GetContainerGroup(p.contextWithAuth(), p.inputVars.OrganizationName, p.inputVars.ProjectName, podname).
+		Execute()
 	if err != nil {
 		// Get response body for error info
 		pd, err := utils.GetResponseBody(response)
@@ -287,7 +290,7 @@ func (p *SaladCloudProvider) GetPodStatus(ctx context.Context, namespace string,
 			return nil, err
 		}
 
-		if response.StatusCode == 404 {
+		if response != nil && response.StatusCode == http.StatusNotFound {
 			p.logger.WithField("namespace", namespace).
 				WithField("name", podname).
 				Warnf("Not Found")
@@ -310,14 +313,8 @@ func (p *SaladCloudProvider) GetPodStatus(ctx context.Context, namespace string,
 		Phase:     phase,
 		StartTime: &startTime,
 		Conditions: []corev1.PodCondition{
-			{
-				Type:   corev1.PodReady,
-				Status: getConditionStatus(ready),
-			},
-			{
-				Type:   corev1.ContainersReady,
-				Status: getConditionStatus(ready),
-			},
+			{Type: corev1.PodReady, Status: getConditionStatus(ready)},
+			{Type: corev1.ContainersReady, Status: getConditionStatus(ready)},
 		},
 		ContainerStatuses: []corev1.ContainerStatus{
 			{
@@ -445,9 +442,9 @@ func (p *SaladCloudProvider) createContainersObject(pod *corev1.Pod) []saladclie
 		} else if len(ips) > 0 {
 			// SaladCloud currently supports one registry auth per container
 			auth := saladclient.CreateContainerRegistryAuthentication{
-				Basic: *saladclient.NewNullableCreateContainerRegistryAuthenticationBasic(&ips[0]),
+				Basic: saladclient.NewCreateContainerRegistryAuthenticationBasic(ips[0].Username, ips[0].Password),
 			}
-			createContainer.RegistryAuthentication = *saladclient.NewNullableCreateContainerRegistryAuthentication(&auth)
+			createContainer.RegistryAuthentication = &auth
 		}
 
 		gpuClasses, err := p.getGPUClasses(pod)
@@ -456,7 +453,7 @@ func (p *SaladCloudProvider) createContainersObject(pod *corev1.Pod) []saladclie
 		}
 		logging := p.getContainerLogging(pod)
 		if logging != nil {
-			createContainer.Logging.Set(logging)
+			createContainer.Logging = logging
 		}
 		priority, err := p.getContainerPriority(pod)
 		if err == nil && priority != nil {
@@ -469,7 +466,7 @@ func (p *SaladCloudProvider) createContainersObject(pod *corev1.Pod) []saladclie
 
 func (p *SaladCloudProvider) getWorkloadContainerLivenessProbeFrom(
 	k8sProbe *corev1.Probe,
-) (*saladclient.NullableContainerGroupLivenessProbe, error) {
+) (*saladclient.ContainerGroupLivenessProbe, error) {
 
 	if k8sProbe == nil || *k8sProbe == (corev1.Probe{}) {
 		// No probe specified.
@@ -519,12 +516,12 @@ func (p *SaladCloudProvider) getWorkloadContainerLivenessProbeFrom(
 	}
 
 	// Wrap in nullable and return
-	return saladclient.NewNullableContainerGroupLivenessProbe(probe), nil
+	return probe, nil
 }
 
 func (p *SaladCloudProvider) getWorkloadContainerReadinessProbeFrom(
 	k8sProbe *corev1.Probe,
-) (*saladclient.NullableContainerGroupReadinessProbe, error) {
+) (*saladclient.ContainerGroupReadinessProbe, error) {
 
 	if k8sProbe == nil || *k8sProbe == (corev1.Probe{}) {
 		return nil, nil
@@ -572,12 +569,12 @@ func (p *SaladCloudProvider) getWorkloadContainerReadinessProbeFrom(
 		probe.SetExec(*execProbe)
 	}
 
-	return saladclient.NewNullableContainerGroupReadinessProbe(probe), nil
+	return probe, nil
 }
 
 func (p *SaladCloudProvider) getWorkloadContainerStartupProbeFrom(
 	k8sProbe *corev1.Probe,
-) (*saladclient.NullableContainerGroupStartupProbe, error) {
+) (*saladclient.ContainerGroupStartupProbe, error) {
 
 	if k8sProbe == nil || *k8sProbe == (corev1.Probe{}) {
 		return nil, nil
@@ -625,7 +622,7 @@ func (p *SaladCloudProvider) getWorkloadContainerStartupProbeFrom(
 		probe.SetExec(*execProbe)
 	}
 
-	return saladclient.NewNullableContainerGroupStartupProbe(probe), nil
+	return probe, nil
 }
 
 func (p *SaladCloudProvider) createContainerGroup(createContainerList []saladclient.CreateContainer, pod *corev1.Pod) []saladclient.CreateContainerGroup {
@@ -640,19 +637,19 @@ func (p *SaladCloudProvider) createContainerGroup(createContainerList []saladcli
 		)
 		readinessProbe, err := p.getWorkloadContainerReadinessProbeFrom(pod.Spec.Containers[0].ReadinessProbe)
 		if err == nil && readinessProbe != nil {
-			createContainerGroupRequest.ReadinessProbe = *readinessProbe
+			createContainerGroupRequest.ReadinessProbe = readinessProbe
 		} else {
 			log.G(context.Background()).Errorf("Failed to get readinessProbe ", err)
 		}
 		livenessProbe, err := p.getWorkloadContainerLivenessProbeFrom(pod.Spec.Containers[0].LivenessProbe)
 		if err == nil && livenessProbe != nil {
-			createContainerGroupRequest.LivenessProbe = *livenessProbe
+			createContainerGroupRequest.LivenessProbe = livenessProbe
 		} else {
 			log.G(context.Background()).Errorf("Failed to get livenessProbe ", err)
 		}
 		startupProbe, err := p.getWorkloadContainerStartupProbeFrom(pod.Spec.Containers[0].StartupProbe)
 		if err == nil && startupProbe != nil {
-			createContainerGroupRequest.StartupProbe = *startupProbe
+			createContainerGroupRequest.StartupProbe = startupProbe
 		} else {
 			log.G(context.Background()).Errorf("Failed to get startupProbe ", err)
 		}

@@ -21,19 +21,19 @@ func (a *APIError) Error() string {
 }
 
 func NewSaladCloudError(err error, response *http.Response) error {
-	if response == nil {
+	// If there is no response or the status code indicates success, return the original error.
+	if response == nil || response.StatusCode < 400 {
 		return err
 	}
 
-	if err == nil {
-		return &APIError{
-			StatusCode: response.StatusCode,
-			Message:    "",
-		}
-	} else {
-		return &APIError{
-			StatusCode: response.StatusCode,
-			Message:    err.Error(),
-		}
+	// Use an empty message if err is nil; otherwise, use err.Error()
+	message := ""
+	if err != nil {
+		message = err.Error()
+	}
+
+	return &APIError{
+		StatusCode: response.StatusCode,
+		Message:    message,
 	}
 }

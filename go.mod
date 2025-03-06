@@ -5,7 +5,7 @@ go 1.23.0
 toolchain go1.24.0
 
 require (
-	github.com/SaladTechnologies/salad-client v0.9.0-alpha.6
+	github.com/SaladTechnologies/salad-client v0.9.0-alpha.7
 	github.com/google/uuid v1.6.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/pkg/errors v0.9.1
