@@ -14,8 +14,8 @@ require (
 	github.com/spf13/cobra v1.9.1
 	github.com/virtual-kubelet/virtual-kubelet v1.11.1-0.20250117201309-5c534ffcd607
 	golang.org/x/text v0.22.0
-	k8s.io/api v0.32.1
-	k8s.io/apimachinery v0.32.1
+	k8s.io/api v0.32.2
+	k8s.io/apimachinery v0.32.2
 	k8s.io/client-go v0.32.1
 	k8s.io/kubelet v0.32.1
 )
