@@ -1,0 +1,33 @@
+{{- /*
+Copyright Salad Technologies, Inc. All Rights Reserved.
+SPDX-License-Identifier: APACHE-2.0
+*/ -}}
+
+{{- if .Values.clusterRoleBinding.create -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  {{- if (or .Values.commonAnnotations .Values.clusterRoleBinding.annotations) }}
+  annotations:
+    {{- with .Values.commonAnnotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.clusterRoleBinding.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- end }}
+  labels:
+    {{- include "virtual-kubelet-saladcloud.labels" . | nindent 4 }}
+    {{- with .Values.clusterRoleBinding.additionalLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  name: {{ default (include "virtual-kubelet-saladcloud.fullname" .) .Values.clusterRoleBinding.name }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: "system:node"
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "virtual-kubelet-saladcloud.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+{{- end }}

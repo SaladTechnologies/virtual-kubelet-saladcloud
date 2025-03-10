@@ -23,6 +23,11 @@ jobs:
         run: |
           echo "commit_date=$(git log -1 --format=%cd --date=format:"%Y%m%d")" >> "$GITHUB_OUTPUT"
           echo "commit_timestamp=$(git log -1 --pretty=%ct)" >> "$GITHUB_OUTPUT"
+          if [[ $GITHUB_REF == refs/tags/v* ]]; then
+            echo "commit_version=${GITHUB_REF:11}" >> "$GITHUB_OUTPUT"
+          else
+            echo "commit_version=0.0.0" >> "$GITHUB_OUTPUT"
+          fi
       - name: Setup Docker BuildKit
         uses: docker/setup-buildx-action@v3
       - name: Collect metadata
@@ -32,7 +37,7 @@ jobs:
           images: |
             ghcr.io/saladtechnologies/virtual-kubelet-saladcloud
           labels: |
-            org.opencontainers.image.title=SaladCloud Virtual Kubelet Provider
+            org.opencontainers.image.title=SaladCloud Virtual Kubelet
             org.opencontainers.image.description=Enables running Kubernetes pods remotely on SaladCloud
             org.opencontainers.image.vendor=Salad Technologies
           tags: |
@@ -58,7 +63,39 @@ jobs:
           labels: ${{ steps.metadata.outputs.labels }}
           platforms: linux/amd64
           pull: true
-          push: ${{ github.event_name != 'pull_request' }}
+          push: ${{ github.event_name != 'pull_request' && github.repository_owner == 'SaladTechnologies' }}
           tags: ${{ steps.metadata.outputs.tags }}
         env:
           SOURCE_DATE_EPOCH: ${{ steps.git.outputs.commit_timestamp }}
+      - name: Install Helm
+        uses: azure/setup-helm@v4.3.0
+      - name: Install Helm Docs
+        uses: jaxxstorm/action-install-gh-release@v1
+        with:
+          repo: norwoodj/helm-docs
+          tag: v1.14.2
+      - name: Prepare Helm Chart
+        run: |
+          sed -i "s|^version:\s*.*$|version: \"${{ steps.git.outputs.commit_version }}\"|g" ./Chart.yaml
+          sed -i "s|^imageTag:\s*.*$|imageTag: \"\"|g" ./values.yaml
+          cp ../../LICENSE .
+          cp ../../NOTICE .
+          helm-docs
+        working-directory: charts/virtual-kubelet-saladcloud-chart
+      - name: Lint Helm Chart
+        run: |
+          helm lint --set salad.apiKey=salad_cloud_user_1234567 --set salad.organizationName=salad --set salad.projectName=default
+        working-directory: charts/virtual-kubelet-saladcloud-chart
+      - name: Test Helm Chart
+        run: |
+          helm template --namespace salad-cloud --set salad.apiKey=salad_cloud_user_1234567 --set salad.organizationName=salad --set salad.projectName=default test .
+        working-directory: charts/virtual-kubelet-saladcloud-chart
+      - name: Package Helm Chart
+        run: |
+          helm package .
+        working-directory: charts/virtual-kubelet-saladcloud-chart
+      - name: Push Helm Chart
+        if: github.event_name != 'pull_request' && github.repository_owner == 'SaladTechnologies'
+        run: |
+          helm push virtual-kubelet-saladcloud-chart-*.tgz oci://ghcr.io/saladtechnologies
+        working-directory: charts/virtual-kubelet-saladcloud-chart

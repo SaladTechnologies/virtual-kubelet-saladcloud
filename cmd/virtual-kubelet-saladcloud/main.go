@@ -8,12 +8,15 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strings"
 
 	"github.com/SaladTechnologies/virtual-kubelet-saladcloud/internal/models"
 	"github.com/SaladTechnologies/virtual-kubelet-saladcloud/internal/provider"
 	"github.com/mitchellh/go-homedir"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
 	"github.com/virtual-kubelet/virtual-kubelet/errdefs"
 	"github.com/virtual-kubelet/virtual-kubelet/log"
 	logruslogger "github.com/virtual-kubelet/virtual-kubelet/log/logrus"
@@ -72,23 +75,11 @@ func initCommandFlags() {
 	virtualKubeletCommand.Flags().StringVar(&inputs.ApiKey, "sce-api-key", inputs.ApiKey, "SaladCloud API Key")
 	virtualKubeletCommand.Flags().StringVar(&inputs.OrganizationName, "sce-organization-name", inputs.OrganizationName, "SaladCloud Organization Name")
 	virtualKubeletCommand.Flags().StringVar(&inputs.ProjectName, "sce-project-name", inputs.ProjectName, "SaladCloud Project Name")
-
-	markFlagRequired("sce-api-key")
-	markFlagRequired("sce-organization-name")
-	markFlagRequired("sce-project-name")
-}
-
-func markFlagRequired(flagName string) {
-	if err := virtualKubeletCommand.MarkFlagRequired(flagName); err != nil {
-		logrus.WithError(err).Errorf("Failed to mark %s as required", flagName)
-		os.Exit(1)
-	}
 }
 
 func runNode(ctx context.Context) error {
-	logrus.Infof("Running node with name prefix: %s", inputs.NodeName)
+	logrus.Infof("Running node with name: %s", inputs.NodeName)
 	logrus.Infof("Running node with log level: %s", inputs.LogLevel)
-	inputs.NodeName = fmt.Sprintf("%s-%s", inputs.NodeName, randSeq(3))
 
 	node, err := nodeutil.NewNode(inputs.NodeName, func(config nodeutil.ProviderConfig) (nodeutil.Provider, node.NodeProvider, error) {
 		return newSaladCloudProvider(ctx, config)
@@ -170,6 +161,47 @@ var virtualKubeletCommand = &cobra.Command{
 	Use:   binaryFilename,
 	Short: description,
 	Long:  description,
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		v := viper.New()
+		v.SetEnvPrefix("SALAD")
+		v.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
+		v.AutomaticEnv()
+		cmd.Flags().VisitAll(func(f *pflag.Flag) {
+			envName := ""
+			switch f.Name {
+			case "log-level":
+				envName = "VK_LOG_LEVEL"
+			case "nodename":
+				envName = "VK_NODE_NAME"
+			case "sce-api-key":
+				envName = "CLOUD_API_KEY"
+			case "sce-organization-name":
+				envName = "CLOUD_ORGANIZATION_NAME"
+			case "sce-project-name":
+				envName = "CLOUD_PROJECT_NAME"
+			}
+
+			if envName != "" && !f.Changed && v.IsSet(envName) {
+				_ = cmd.Flags().Set(f.Name, fmt.Sprintf("%v", v.Get(envName)))
+			}
+		})
+
+		if inputs.ApiKey == "" {
+			logrus.Fatal("A SaladCloud API Key is required")
+		}
+
+		if inputs.OrganizationName == "" {
+			logrus.Fatal("A SaladCloud organization name is required")
+		}
+
+		if inputs.ProjectName == "" {
+			logrus.Fatal("A SaladCloud project name is required")
+		}
+
+		if !cmd.Flags().Changed("nodename") {
+			inputs.NodeName = fmt.Sprintf("%s-%s", inputs.NodeName, randSeq(3))
+		}
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		logger := logrus.StandardLogger()
 		if logLevel, err := logrus.ParseLevel(inputs.LogLevel); err == nil {

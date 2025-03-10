@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "required": ["imageRegistry", "imageName", "imagePullPolicy", "salad"],
+  "properties": {
+    "imageRegistry": {
+      "type": "string",
+      "description": "The image registry for the SaladCloud Virtual Kubelet container that runs on one of your Kubernetes cluster's worker nodes. This is prepended to the `imageName`.",
+      "minLength": 1
+    },
+    "imageName": {
+      "type": "string",
+      "description": "The image name for the SaladCloud Virtual Kubelet container that runs on one of your Kubernetes cluster's worker nodes. This is appended to the `imageRegistry`.",
+      "minLength": 1
+    },
+    "imageTag": {
+      "type": "string",
+      "description": "The image tag for the SaladCloud Virtual Kubelet container that runs on one of your Kubernetes cluster's worker nodes. This defaults to the chart's `appVersion`. This is ignored when `imageDigest` is defined and not empty."
+    },
+    "imageDigest": {
+      "type": "string",
+      "description": "The image digest for the SaladCloud Virtual Kubelet container that runs on one of your Kubernetes cluster's worker nodes. This may be used in place of `imageTag` to specify a specific image version."
+    },
+    "imagePullPolicy": {
+      "type": "string",
+      "description": "Image pull policy for the virtual-kubelet-saladcloud image",
+      "enum": ["Always", "IfNotPresent", "Never"]
+    },
+    "salad": {
+      "type": "object",
+      "required": ["apiKey", "organizationName", "projectName"],
+      "properties": {
+        "apiKey": {
+          "type": "string",
+          "description": "The SaladCloud API key used by the SaladCloud Virtual Kubelet to manage container group deployments. The API key must be associated with a user account with access to the organization and project (see `salad.organizationName` and `salad.projectName`).",
+          "maxLength": 255,
+          "minLength": 21,
+          "pattern": "salad_cloud_[0-9A-Za-z]{1,7}_[0-9A-Za-z]{7,235}"
+        },
+        "organizationName": {
+          "type": "string",
+          "description": "The SaladCloud organization name used by the SaladCloud Virtual Kubelet to manage container group deployments.",
+          "maxLength": 63,
+          "minLength": 2,
+          "pattern": "^[a-z][a-z0-9-]{0,61}[a-z0-9]$"
+        },
+        "projectName": {
+          "type": "string",
+          "description": "The SaladCloud project name used by the SaladCloud Virtual Kubelet to manage container group deployments.",
+          "maxLength": 63,
+          "minLength": 2,
+          "pattern": "^[a-z][a-z0-9-]{0,61}[a-z0-9]$"
+        },
+        "nodeName": {
+          "type": "string",
+          "description": "The Kubernetes node name used by the SaladCloud Virtual Kubelet.",
+          "maxLength": 63,
+          "minLength": 0,
+          "pattern": "^(?:[a-z][a-z0-9-]{0,61}[a-z0-9])?$"
+        },
+        "debug": {
+          "type": "boolean",
+          "description": "Specifies whether debug logging is enabled in the SaladCloud Virtual Kubelet."
+        }
+      }
+    }
+  }
+}

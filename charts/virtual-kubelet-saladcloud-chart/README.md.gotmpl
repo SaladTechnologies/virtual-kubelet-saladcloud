@@ -1,0 +1,45 @@
+# SaladCloud Virtual Kubelet
+
+{{ template "chart.deprecationWarning" . }}
+
+{{ template "chart.typeBadge" . }} {{ template "chart.versionBadge" . }}
+
+{{ template "chart.description" . }}
+
+## Getting Started
+
+Install the Helm chart by running the following command:
+
+   ```shell
+   helm install \
+     --create-namespace \
+     --namespace salad-cloud
+     --set salad.apiKey=$SALAD_API_KEY \
+     --set salad.organizationName=$SALAD_ORGANIZATION_NAME \
+     --set salad.projectName=$SALAD_PROJECT_NAME \
+     mynode oci://ghcr.io/saladtechnologies/virtual-kubelet-saladcloud-chart --version 1.0.0
+   ```
+
+Verify the SaladCloud virtual node is ready by running the following command:
+
+   ```sh
+   kubectl get nodes
+   ```
+
+   <details>
+   <summary>Results</summary>
+
+   ```shell
+   NAME                                   STATUS    ROLES     AGE       VERSION
+   saladcloud-node                        Ready     agent     1m        v1.0.0
+   ```
+
+   </details>
+
+{{ template "chart.valuesSection" . }}
+
+{{ template "chart.requirementsSection" . }}
+
+{{ template "chart.sourcesSection" . }}
+
+{{ template "chart.maintainersSection" . }}

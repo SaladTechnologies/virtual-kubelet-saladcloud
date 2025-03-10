@@ -1,5 +1,5 @@
 name: Request a feature
-description: Let us know if you have ideas for issues you would like to see supported by the provider.
+description: Let us know if you have ideas for issues you would like to see supported by the SaladCloud Virtual Kubelet.
 labels:
   - enhancement
 body:

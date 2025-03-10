@@ -1,19 +1,19 @@
-# SaladCloud Virtual Kubelet Provider
+# SaladCloud Virtual Kubelet
 
 [![License](https://img.shields.io/github/license/SaladTechnologies/virtual-kubelet-saladcloud)](./LICENSE) [![CI Workflow](https://github.com/SaladTechnologies/virtual-kubelet-saladcloud/actions/workflows/ci.yml/badge.svg?branch=main&event=push)](https://github.com/SaladTechnologies/virtual-kubelet-saladcloud/actions/workflows/ci.yml) [![Go Report Card](https://goreportcard.com/badge/github.com/SaladTechnologies/virtual-kubelet-saladcloud)](https://goreportcard.com/report/github.com/SaladTechnologies/virtual-kubelet-saladcloud)
 
 <center>
-  <a href="https://github.com/SaladTechnologies/virtual-kubelet-saladcloud"><img alt="SaladCloud Virtual Kubelet Provider" src="./images/saladcloud-virtual-kubelet-banner.png" width="100%" /></a>
+  <a href="https://github.com/SaladTechnologies/virtual-kubelet-saladcloud"><img alt="SaladCloud Virtual Kubelet" src="./images/saladcloud-virtual-kubelet-banner.png" width="100%" /></a>
 </center>
 
-Salad's Virtual Kubelet (VK) provider for SaladCloud enables running Kubernetes (K8s) pods as SaladCloud Container Group deployments. This prototype is currently in development, and not production ready yet.  If you are interested, please reach out to us to discuss your specific needs.
+Salad's Virtual Kubelet (VK) provider for SaladCloud enables running Kubernetes (K8s) pods as SaladCloud container group deployments. This prototype is currently in development, and not yet ready for production scenarios. If you are interested, please reach out to us to discuss your specific needs.
 
 ## How it Works
 
-The SaladCloud Virtual Kubelet Provider creates a _virtual node_ in your K8s cluster.
+The SaladCloud Virtual Kubelet creates a _virtual node_ in your K8s cluster.
 
 <center>
-  <a href="https://github.com/SaladTechnologies/virtual-kubelet-saladcloud"><img alt="architecture diagram of the SaladCloud Virtual Kubelet Provider" src="./images/saladcloud-virtual-kubelet-architecture.png" width="100%" /></a>
+  <a href="https://github.com/SaladTechnologies/virtual-kubelet-saladcloud"><img alt="architecture diagram of the SaladCloud Virtual Kubelet" src="./images/saladcloud-virtual-kubelet-architecture.png" width="100%" /></a>
 </center>
 
 To the K8s API, it looks like a real node. However, when you schedule a pod on the virtual node, a container group deployment is created using the SaladCloud API instead of running the pod on a node in the K8s cluster. The container group deployment runs the pod on a remote, GPU-enabled node on the SaladCloud network.
@@ -51,27 +51,25 @@ Follow the steps below to get started with local development.
 3. Build the project.
 
    ```sh
-   make build
+   make build && make build-image
    ```
 
-4. Run the project in foreground.
+4. Run the project in the foreground:
 
    ```sh
-   ./bin/virtual-kubelet --sce-api-key {apiKey} --sce-project-name {projectName} --sce-organization-name {organizationName}
+   ./bin/virtual-kubelet-saladcloud --sce-api-key {apiKey} --sce-project-name {projectName} --sce-organization-name {organizationName}
    ```
 
-or
+   Or run the project deployed to your Kubernetes cluster via Helm:
 
-4. Run the project in K8s via Helm.
-
-```sh
-helm install \
-   --create-namespace \
-   --namespace saladcloud \
-   --set salad.apiKey=${apiKey} \
-   --set salad.organizationName=${organizationName} \
-   --set salad.projectName=${projectName} \
-   --set provider.image.tag=${imageTag} \
-   saladcloud-node \
-   ./charts/virtual-kubelet
-```
+   ```sh
+   helm install \
+     --create-namespace \
+     --namespace salad-cloud \
+     --set salad.apiKey=${apiKey} `
+     --set salad.organizationName=${organizationName} `
+     --set salad.projectName=${projectName} `
+     --set imageTag=latest `
+     mynode \
+     ./charts/virtual-kubelet-saladcloud-chart
+   ```

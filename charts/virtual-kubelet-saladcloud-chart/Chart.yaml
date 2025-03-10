@@ -1,0 +1,25 @@
+apiVersion: v2
+name: virtual-kubelet-saladcloud-chart
+version: "0.0.0"
+kubeVersion: ">=v1.29.0-0"
+description: Deploy containers to SaladCloud from your Kubernetes cluster using a virtual node.
+type: application
+keywords:
+  - gpu
+  - kubelet
+  - kubernetes
+  - salad
+  - saladcloud
+  - virtual-kubelet
+  - virtual-kubelet-provider
+  - virtual-kubelet-saladcloud
+  - virtual-kubelet-saladcloud-chart
+  - vk
+home: https://github.com/SaladTechnologies/virtual-kubelet-saladcloud
+sources:
+  - https://github.com/SaladTechnologies/virtual-kubelet-saladcloud
+maintainers:
+  - email: dev@salad.com
+    name: Salad Chefs
+    url: https://salad.com/
+icon: https://raw.githubusercontent.com/SaladTechnologies/virtual-kubelet-saladcloud/main/images/salad-logo-500x500.png

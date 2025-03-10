@@ -2,13 +2,13 @@
 
 # Standard Development Targets
 # build - build the project, binaries go into ./bin
-# build-image - build a Docker image with the virtual-kubelet binary
+# build-image - build a Docker image with the virtual-kubelet-saladcloud binary
 # clean - clean up built binaries and cached Go artifacts
 # lint - run golangci-lint (set args in LINT_ARGS)
 # tidy - "go mod tidy"
 
 IMAGE_TAG ?= latest
-CMDS := bin/virtual-kubelet
+CMDS := bin/virtual-kubelet-saladcloud
 
 
 # The conventional BUILD_VERSION is not very useful at the moment since we are not tagging the repo
@@ -50,7 +50,7 @@ test:
 tidy:
 	go mod tidy
 
-bin/virtual-kubelet:
+bin/virtual-kubelet-saladcloud:
 
 bin/%: CGO_ENABLED=0
 bin/%:
