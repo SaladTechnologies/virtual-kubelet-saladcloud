@@ -1,0 +1,186 @@
+# -- Overrides the name template. This is used as the value of the `app.kubernetes.io/name` annotation and in the
+# fullname template (with the Helm release name). When undefined or empty, this defaults to the value
+# "virtual-kubelet-saladcloud".
+nameOverride: ""
+
+# -- Overrides the fullname template. This is used as the default resource name. When undefined or empty, this defaults
+# to the Helm release name combined with the name template (see `nameOverride`).
+fullnameOverride: ""
+
+# -- Overrides the namespace. When undefined or empty, this defaults to the target namespace of the Helm release.
+namespaceOverride: ""
+
+# -- Common annotations to add to all resources. See the
+# [Kubernetes documentation](https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/) for more
+# information about annotations.
+commonAnnotations: {}
+
+# -- Common labels to add to all resources. See the
+# [Kubernetes documentation](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/) for more
+# information about labels.
+commonLabels: {}
+
+# -- The image registry for the SaladCloud Virtual Kubelet container that runs on one of your Kubernetes cluster's
+# worker nodes. This is prepended to the `imageName`. See the
+# [Kubernetes documentation](https://kubernetes.io/docs/concepts/containers/images/) for more information about images.
+imageRegistry: ghcr.io/saladtechnologies
+
+# -- The image name for the SaladCloud Virtual Kubelet container that runs on one of your Kubernetes cluster's worker
+# nodes. This is appended to the `imageRegistry`. See the
+# [Kubernetes documentation](https://kubernetes.io/docs/concepts/containers/images/) for more information about images.
+imageName: virtual-kubelet-saladcloud
+
+# -- The image tag for the SaladCloud Virtual Kubelet container that runs on one of your Kubernetes cluster's worker
+# nodes. This defaults to the chart's `appVersion`. This is ignored when `imageDigest` is defined and not empty. See the
+# [Kubernetes documentation](https://kubernetes.io/docs/concepts/containers/images/) for more information about images.
+imageTag: main
+
+# -- The image digest for the SaladCloud Virtual Kubelet container that runs on one of your Kubernetes cluster's worker
+# nodes. This may be used in place of `imageTag` to specify a specific image version. See the
+# [Kubernetes documentation](https://kubernetes.io/docs/concepts/containers/images/) for more information about images.
+imageDigest: ""
+
+# -- The image pull policy for the SaladCloud Virtual Kubelet container that runs on one of your Kubernetes cluster's
+# worker nodes. The default is `IfNotPresent`, which skips pulling the SaladCloud Virtual Kubelet image if it already
+# exists on the Kubernetes cluster's worker node. See the
+# [Kubernetes documentation](https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy) for more
+# information about the image pull policy.
+imagePullPolicy: IfNotPresent
+
+# -- The image pull secrets for the SaladCloud Virtual Kubelet container that runs on one of your Kubernetes cluster's
+# worker nodes. The default image repository on the GitHub Container Registry is public and does not require a secret.
+# Use this if you override the image repository (`imageRegistry` and `imageName`) and it is private. See the
+# [Kubernetes documentation](https://kubernetes.io/docs/concepts/containers/images/#using-a-private-registry) for more
+# information about private images.
+imagePullSecrets: []
+
+salad:
+  # -- The SaladCloud API key used by the SaladCloud Virtual Kubelet to manage container group deployments. The API key
+  # must be associated with a user account with access to the organization and project (see `salad.organizationName` and
+  # `salad.projectName`).
+  apiKey: ""
+
+  # -- The SaladCloud organization name used by the SaladCloud Virtual Kubelet to manage container group deployments.
+  organizationName: ""
+
+  # -- The SaladCloud project name used by the SaladCloud Virtual Kubelet to manage container group deployments.
+  projectName: ""
+
+  # -- The Kubernetes node name used by the SaladCloud Virtual Kubelet.
+  nodeName: ""
+
+  # -- Specifies whether debug logging is enabled in the SaladCloud Virtual Kubelet.
+  debug: false
+
+clusterRoleBinding:
+  # -- Specifies whether a cluster role binding for the service account should be created.
+  create: true
+
+  # -- Additional labels to add to the cluster role binding. See the
+  # [Kubernetes documentation](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/) for more
+  # information about labels.
+  additionalLabels: {}
+
+  # -- Annotations to add to the cluster role binding. See the
+  # [Kubernetes documentation](https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/) for more
+  # information about annotations.
+  annotations: {}
+
+  # -- The name of the cluster role binding. If undefined or empty, defaults to the fullname template.
+  name: ""
+
+deployment:
+  # -- Additional labels to add to the deployment. See the
+  # [Kubernetes documentation](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/) for more
+  # information about labels.
+  additionalLabels: {}
+
+  # -- Annotations to add to the deployment. See the
+  # [Kubernetes documentation](https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/) for more
+  # information about annotations.
+  annotations: {}
+
+  # -- The name of the deployment. If undefined or empty, defaults to the fullname template.
+  name: ""
+
+pod:
+  # -- Additional labels to add to the pod. See the
+  # [Kubernetes documentation](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/) for more
+  # information about labels.
+  additionalLabels: {}
+
+  # -- Annotations to add to the pod. See the
+  # [Kubernetes documentation](https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/) for more
+  # information about annotations.
+  annotations: {}
+
+  # -- The affinity constraints to control scheduling the SaladCloud Virtual Kubelet pod on one of your Kubernetes
+  # cluster's worker nodes.
+  affinity: {}
+
+  # -- The security context to apply to the SaladCloud Virtual Kubelet container.
+  containerSecurityContext: {}
+
+  # -- The node constraints to control scheduling the SaladCloud Virtual Kubelet pod on one of your Kubernetes cluster's
+  # worker nodes.
+  nodeSelector:
+    kubernetes.io/os: linux
+    kubernetes.io/arch: amd64
+
+  # -- The security context to apply to the SaladCloud Virtual Kubelet pod.
+  podSecurityContext: {}
+
+  # -- The priority class name of the SaladCloud Virtual Kubelet pod.
+  priorityClassName: ""
+
+  # -- The resource constraints of the SaladCloud Virtual Kubelet pod.
+  resources: {}
+
+  # -- The name of the Kubernetes scheduler to handle scheduling the SaladCloud Virtual Kubelet pod on one of your
+  # Kubernetes cluster's worker nodes.
+  schedulerName: ""
+
+  # -- The tolerations to apply to the SaladCloud Virtual Kubelet pod.
+  tolerations: []
+
+  # -- The additional volume mounts to add to the SaladCloud Virtual Kubelet container.
+  volumeMounts: []
+
+  # -- The additional volumes to add to the SaladCloud Virtual Kubelet pod.
+  volumes: []
+
+secret:
+  # -- Specifies whether a secret for the SaladCloud API key should be created.
+  create: true
+
+  # -- Additional labels to add to the secret. See the
+  # [Kubernetes documentation](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/) for more
+  # information about labels.
+  additionalLabels: {}
+
+  # -- Annotations to add to the secret. See the
+  # [Kubernetes documentation](https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/) for more
+  # information about annotations.
+  annotations: {}
+
+  # -- The name of the secret. If undefined or empty, defaults to the fullname template.
+  name: ""
+
+serviceAccount:
+  # -- Specifies whether a service account should be created.
+  create: true
+
+  # -- Additional labels to add to the service account. See the
+  # [Kubernetes documentation](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/) for more
+  # information about labels.
+  additionalLabels: {}
+
+  # -- Annotations to add to the service account. See the
+  # [Kubernetes documentation](https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/) for more
+  # information about annotations.
+  annotations: {}
+
+  # -- The name of the service account. If undefined or empty and `serviceAccount.create` is `true`, defaults to the
+  # fullname template. If undefined or empty and `serviceAccount.create` is `false`, defaults to the "default" service
+  # account in the target namespace.
+  name: ""

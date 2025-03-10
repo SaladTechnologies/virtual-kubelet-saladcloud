@@ -1,0 +1,116 @@
+{{- /*
+Copyright Salad Technologies, Inc. All Rights Reserved.
+SPDX-License-Identifier: APACHE-2.0
+*/ -}}
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  {{- if (or .Values.commonAnnotations .Values.deployment.annotations) }}
+  annotations:
+    {{- with .Values.commonAnnotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.deployment.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- end }}
+  labels:
+    {{- include "virtual-kubelet-saladcloud.labels" . | nindent 4 }}
+    {{- with .Values.deployment.additionalLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  name: {{ default (include "virtual-kubelet-saladcloud.fullname" .) .Values.deployment.name }}
+  namespace: {{ include "virtual-kubelet-saladcloud.namespace" . | quote }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "virtual-kubelet-saladcloud.matchLabels" . | nindent 6 }}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      {{- if (or .Values.commonAnnotations .Values.pod.annotations) }}
+      annotations:
+        {{- with .Values.commonAnnotations }}
+        {{- toYaml . | nindent 4 }}
+        {{- end }}
+        {{- with .Values.pod.annotations }}
+        {{- toYaml . | nindent 4 }}
+        {{- end }}
+      {{- end }}
+      labels:
+        {{- include "virtual-kubelet-saladcloud.labels" . | nindent 8 }}
+        {{- with .Values.pod.additionalLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.pod.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      automountServiceAccountToken: true
+      containers:
+        - env:
+            - name: SALAD_CLOUD_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: salad-cloud-api-key
+                  name: {{ default (include "virtual-kubelet-saladcloud.fullname" .) .Values.secret.name }}
+            - name: SALAD_CLOUD_ORGANIZATION_NAME
+              value: {{ required ".Values.salad.organizationName is required" .Values.salad.organizationName }}
+            - name: SALAD_CLOUD_PROJECT_NAME
+              value: {{ required ".Values.salad.projectName is required" .Values.salad.projectName }}
+            - name: SALAD_VK_LOG_LEVEL
+              value: {{ ternary "debug" "info" .Values.salad.debug }}
+            {{- if .Values.salad.nodeName }}
+            - name: SALAD_VK_NODE_NAME
+              value: {{ .Values.salad.nodeName }}
+            {{- end }}
+          {{- if .Values.imageDigest }}
+          image: "{{ .Values.imageRegistry }}/{{ .Values.imageName }}@{{ .Values.imageDigest }}"
+          {{- else }}
+          image: "{{ .Values.imageRegistry }}/{{ .Values.imageName }}:{{ default (printf "v%s" (default .Chart.Version .Chart.AppVersion)) .Values.imageTag }}"
+          {{- end }}
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          name: virtual-kubelet-saladcloud
+          {{- with .Values.pod.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.pod.containerSecurityContext }}
+          containerSecurityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.pod.volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.pod.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.pod.schedulerName }}
+      schedulerName: {{ . | quote }}
+      {{- end }}
+      {{- with .Values.pod.podSecurityContext }}
+      podSecurityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "virtual-kubelet-saladcloud.serviceAccountName" . }}
+      {{- with .Values.pod.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.pod.priorityClassName }}
+      priorityClassName: {{ . | quote }}
+      {{- end }}
+      {{- with .Values.pod.volumes }}
+      volumes:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

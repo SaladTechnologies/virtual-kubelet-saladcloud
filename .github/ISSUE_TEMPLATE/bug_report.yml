@@ -1,5 +1,5 @@
 name: Report a bug
-description: Let us know if you encountered an issue using the provider.
+description: Let us know if you encountered an issue using the SaladCloud Virtual Kubelet.
 labels:
   - bug
 body:
@@ -32,9 +32,9 @@ body:
     attributes:
       label: Anything else we should know?
   - type: textarea
-    id: providerVersion
+    id: productVersion
     attributes:
-      label: What is the version of your SaladCloud Virtual Kubelet Provider?
+      label: What is the version of your SaladCloud Virtual Kubelet?
       description: e.g. 1.0.1
     validations:
       required: true

@@ -1,0 +1,28 @@
+{{- /*
+Copyright Salad Technologies, Inc. All Rights Reserved.
+SPDX-License-Identifier: APACHE-2.0
+*/ -}}
+
+{{- if lt .Capabilities.KubeVersion.Minor "29" -}}
+-----------------------------------------------------------------------------
+WARNING - Running on unsupported Kubernetes version "1.{{.Capabilities.KubeVersion.Minor}}". This is supported on Kubernetes 1.29 or higher.
+-----------------------------------------------------------------------------
+{{- end }}
+
+The SaladCloud virtual node is being deploying to your cluster.
+
+To verify the status of the deployment, execute the following command:
+
+  kubectl get pods --namespace={{ .Release.Namespace }} --selector='app.kubernetes.io/name={{ include "virtual-kubelet-saladcloud.name" . }},app.kubernetes.io/instance={{ .Release.Name }}'
+
+To verify the status of the virtual node, execute the following command:
+
+  {{ if .Values.salad.nodeName -}}
+  kubectl get node {{ .Values.salad.nodeName }}
+  {{- else -}}
+  kubectl get nodes --selector='kubernetes.io/role=agent,type=virtual-kubelet'
+  {{- end }}
+
+Learn more about scheduling pods from your cluster to SaladCloud:
+
+  - https://docs.salad.com/
