@@ -71,7 +71,7 @@ spec:
           {{- if .Values.imageDigest }}
           image: "{{ .Values.imageRegistry }}/{{ .Values.imageName }}@{{ .Values.imageDigest }}"
           {{- else }}
-          image: "{{ .Values.imageRegistry }}/{{ .Values.imageName }}:{{ default (printf "v%s" (default .Chart.Version .Chart.AppVersion)) .Values.imageTag }}"
+          image: "{{ .Values.imageRegistry }}/{{ .Values.imageName }}:{{ default .Chart.Version .Values.imageTag }}"
           {{- end }}
           imagePullPolicy: {{ .Values.imagePullPolicy }}
           name: virtual-kubelet-saladcloud

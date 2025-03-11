@@ -31,7 +31,7 @@ imageRegistry: ghcr.io/saladtechnologies
 imageName: virtual-kubelet-saladcloud
 
 # -- The image tag for the SaladCloud Virtual Kubelet container that runs on one of your Kubernetes cluster's worker
-# nodes. This defaults to the chart's `appVersion`. This is ignored when `imageDigest` is defined and not empty. See the
+# nodes. This defaults to the chart's `version`. This is ignored when `imageDigest` is defined and not empty. See the
 # [Kubernetes documentation](https://kubernetes.io/docs/concepts/containers/images/) for more information about images.
 imageTag: main
 
