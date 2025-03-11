@@ -17,7 +17,8 @@ Install the Helm chart by running the following command:
      --set salad.apiKey=$SALAD_API_KEY \
      --set salad.organizationName=$SALAD_ORGANIZATION_NAME \
      --set salad.projectName=$SALAD_PROJECT_NAME \
-     mynode oci://ghcr.io/saladtechnologies/virtual-kubelet-saladcloud-chart --version 1.0.0
+     --set salad.nodeName=saladcloud-node \
+     mynode oci://ghcr.io/saladtechnologies/virtual-kubelet-saladcloud-chart --version {{ template "chart.version" . }}
    ```
 
 Verify the SaladCloud virtual node is ready by running the following command:
