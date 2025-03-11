@@ -15,7 +15,7 @@
     },
     "imageTag": {
       "type": "string",
-      "description": "The image tag for the SaladCloud Virtual Kubelet container that runs on one of your Kubernetes cluster's worker nodes. This defaults to the chart's `appVersion`. This is ignored when `imageDigest` is defined and not empty."
+      "description": "The image tag for the SaladCloud Virtual Kubelet container that runs on one of your Kubernetes cluster's worker nodes. This defaults to the chart's `version`. This is ignored when `imageDigest` is defined and not empty."
     },
     "imageDigest": {
       "type": "string",

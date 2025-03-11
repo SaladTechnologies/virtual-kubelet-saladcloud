@@ -46,7 +46,7 @@ Get the labels used by all resources.
 {{- define "virtual-kubelet-saladcloud.labels" -}}
 app.kubernetes.io/component: kubelet
 app.kubernetes.io/managed-by: {{ .Release.Service }}
-app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+app.kubernetes.io/version: {{ .Chart.Version | quote }}
 helm.sh/chart: {{ include "virtual-kubelet-saladcloud.chart" . }}
 {{ include "virtual-kubelet-saladcloud.matchLabels" . }}
 {{- with .Values.commonLabels }}

@@ -17,7 +17,8 @@ Install the Helm chart by running the following command:
      --set salad.apiKey=$SALAD_API_KEY \
      --set salad.organizationName=$SALAD_ORGANIZATION_NAME \
      --set salad.projectName=$SALAD_PROJECT_NAME \
-     mynode oci://ghcr.io/saladtechnologies/virtual-kubelet-saladcloud-chart --version 1.0.0
+     --set salad.nodeName=saladcloud-node \
+     mynode oci://ghcr.io/saladtechnologies/virtual-kubelet-saladcloud-chart --version 0.0.0
    ```
 
 Verify the SaladCloud virtual node is ready by running the following command:
@@ -55,7 +56,7 @@ Verify the SaladCloud virtual node is ready by running the following command:
 | imagePullPolicy | string | `"IfNotPresent"` | The image pull policy for the SaladCloud Virtual Kubelet container that runs on one of your Kubernetes cluster's worker nodes. The default is `IfNotPresent`, which skips pulling the SaladCloud Virtual Kubelet image if it already exists on the Kubernetes cluster's worker node. See the [Kubernetes documentation](https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy) for more information about the image pull policy. |
 | imagePullSecrets | list | `[]` | The image pull secrets for the SaladCloud Virtual Kubelet container that runs on one of your Kubernetes cluster's worker nodes. The default image repository on the GitHub Container Registry is public and does not require a secret. Use this if you override the image repository (`imageRegistry` and `imageName`) and it is private. See the [Kubernetes documentation](https://kubernetes.io/docs/concepts/containers/images/#using-a-private-registry) for more information about private images. |
 | imageRegistry | string | `"ghcr.io/saladtechnologies"` | The image registry for the SaladCloud Virtual Kubelet container that runs on one of your Kubernetes cluster's worker nodes. This is prepended to the `imageName`. See the [Kubernetes documentation](https://kubernetes.io/docs/concepts/containers/images/) for more information about images. |
-| imageTag | string | `"main"` | The image tag for the SaladCloud Virtual Kubelet container that runs on one of your Kubernetes cluster's worker nodes. This defaults to the chart's `appVersion`. This is ignored when `imageDigest` is defined and not empty. See the [Kubernetes documentation](https://kubernetes.io/docs/concepts/containers/images/) for more information about images. |
+| imageTag | string | `"main"` | The image tag for the SaladCloud Virtual Kubelet container that runs on one of your Kubernetes cluster's worker nodes. This defaults to the chart's `version`. This is ignored when `imageDigest` is defined and not empty. See the [Kubernetes documentation](https://kubernetes.io/docs/concepts/containers/images/) for more information about images. |
 | nameOverride | string | `""` | Overrides the name template. This is used as the value of the `app.kubernetes.io/name` annotation and in the fullname template (with the Helm release name). When undefined or empty, this defaults to the value "virtual-kubelet-saladcloud". |
 | namespaceOverride | string | `""` | Overrides the namespace. When undefined or empty, this defaults to the target namespace of the Helm release. |
 | pod.additionalLabels | object | `{}` | Additional labels to add to the pod. See the [Kubernetes documentation](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/) for more information about labels. |
