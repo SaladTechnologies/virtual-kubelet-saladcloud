@@ -23,3 +23,5 @@ maintainers:
     name: Salad Chefs
     url: https://salad.com/
 icon: https://raw.githubusercontent.com/SaladTechnologies/virtual-kubelet-saladcloud/main/images/salad-logo-500x500.png
+annotations:
+  artifacthub.io/category: integration-delivery
