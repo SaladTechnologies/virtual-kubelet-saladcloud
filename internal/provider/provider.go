@@ -63,14 +63,8 @@ func NewSaladCloudProvider(ctx context.Context, inputVars models.InputVars, prov
 		secretLister: providerConfig.Secrets,
 	}
 	cloudProvider.setNodeCapacity()
-	cloudProvider.setCountryCodes([]string{"US"})
 
 	return cloudProvider, nil
-}
-func (p *SaladCloudProvider) setCountryCodes(countries []string) {
-	for _, countryCode := range countries {
-		p.countryCodes = append(p.countryCodes, saladclient.CountryCode(countryCode))
-	}
 }
 
 func (p *SaladCloudProvider) setNodeCapacity() {
@@ -713,22 +707,20 @@ func (p *SaladCloudProvider) getGPUClasses(pod *corev1.Pod) ([]string, error) {
 
 func (p *SaladCloudProvider) getCountryCodes(pod *corev1.Pod) ([]saladclient.CountryCode, error) {
 	countryCodes := make([]saladclient.CountryCode, 0)
-	countryCodes = append(countryCodes, "US")
 	countryCodesFromAnnotation, ok := pod.Annotations["salad.com/country-codes"]
 	if !ok {
+		// CC is optional, nothing to see here
 		return countryCodes, nil
 	}
 	codes := strings.Split(countryCodesFromAnnotation, ",")
 	for _, code := range codes {
-		cc, err := saladclient.NewCountryCodeFromValue(code)
+		cc, err := saladclient.NewCountryCodeFromValue(strings.ToLower(code))
 		if err != nil {
 			return []saladclient.CountryCode{}, errors.WithMessage(err, "Invalid country code provided: "+code)
 		}
 		countryCodes = append(countryCodes, *cc)
 	}
-	if len(countryCodes) == 0 {
-		countryCodes = append(countryCodes, "us")
-	}
+	p.countryCodes = countryCodes
 	return countryCodes, nil
 }
 
