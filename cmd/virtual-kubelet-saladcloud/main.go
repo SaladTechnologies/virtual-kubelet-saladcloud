@@ -38,10 +38,18 @@ var (
 )
 
 func defaultInputs() models.InputVars {
+	var kubeConfig string
+
+	// Default config file in $HOME
 	home, err := homedir.Dir()
-	kubeConfig := os.Getenv("KUBECONFIG")
 	if err == nil && home != "" {
 		kubeConfig = filepath.Join(home, ".kube", "config")
+	}
+
+	// If KUBECONFIG is defined use it instead, if it is empty
+	// set the default config file name to ""
+	if kc, ok := os.LookupEnv("KUBECONFIG"); ok {
+		kubeConfig = kc
 	}
 
 	return models.InputVars{
@@ -70,6 +78,9 @@ func main() {
 func initCommandFlags() {
 	virtualKubeletCommand.Flags().StringVar(&inputs.NodeName, "nodename", inputs.NodeName, "Kubernetes node name")
 	virtualKubeletCommand.Flags().StringVar(&inputs.KubeConfig, "kube-config", inputs.KubeConfig, "Kubeconfig file")
+	virtualKubeletCommand.Flags().StringVar(&inputs.KubeConfig, "kubeconfig", inputs.KubeConfig, "Kubeconfig file")
+	virtualKubeletCommand.Flags().MarkHidden("kube-config")
+	virtualKubeletCommand.MarkFlagsMutuallyExclusive("kube-config", "kubeconfig")
 	virtualKubeletCommand.Flags().BoolVar(&inputs.DisableTaint, "disable-taint", inputs.DisableTaint, "Disable the tainted effect")
 	virtualKubeletCommand.Flags().StringVar(&inputs.LogLevel, "log-level", inputs.LogLevel, "Log level for the node")
 	virtualKubeletCommand.Flags().StringVar(&inputs.ApiKey, "sce-api-key", inputs.ApiKey, "SaladCloud API Key")
