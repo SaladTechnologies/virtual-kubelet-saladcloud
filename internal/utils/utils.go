@@ -40,10 +40,10 @@ func GetPodResource(podSpec corev1.PodSpec) (cpu int64, memory int64) {
 
 func GetPodName(nameSpace, containerGroup string, pod *corev1.Pod) string {
 	if nameSpace == "" {
-		nameSpace = pod.ObjectMeta.Namespace
+		nameSpace = pod.Namespace
 	}
 	if containerGroup == "" {
-		containerGroup = pod.ObjectMeta.Name
+		containerGroup = pod.Name
 	}
 	if nameSpace == "" && containerGroup == "" && pod.Spec.Containers[0].Name != "" {
 		return pod.Spec.Containers[0].Name

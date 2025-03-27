@@ -149,7 +149,7 @@ func (p *SaladCloudProvider) CreatePod(ctx context.Context, pod *corev1.Pod) err
 	}
 
 	now := metav1.NewTime(time.Now())
-	pod.ObjectMeta.CreationTimestamp = now
+	pod.CreationTimestamp = now
 	pod.Status = corev1.PodStatus{
 		Phase:     corev1.PodPending,
 		StartTime: &now,
@@ -677,7 +677,7 @@ func (p *SaladCloudProvider) createContainerGroup(createContainerList []saladcli
 }
 
 func (p *SaladCloudProvider) getGPUClasses(pod *corev1.Pod) ([]string, error) {
-	gpuRequestedString, ok := pod.ObjectMeta.Annotations["salad.com/gpu-classes"]
+	gpuRequestedString, ok := pod.Annotations["salad.com/gpu-classes"]
 	if !ok {
 		return nil, nil
 	}
@@ -714,7 +714,7 @@ func (p *SaladCloudProvider) getGPUClasses(pod *corev1.Pod) ([]string, error) {
 func (p *SaladCloudProvider) getCountryCodes(pod *corev1.Pod) ([]saladclient.CountryCode, error) {
 	countryCodes := make([]saladclient.CountryCode, 0)
 	countryCodes = append(countryCodes, "US")
-	countryCodesFromAnnotation, ok := pod.ObjectMeta.Annotations["salad.com/country-codes"]
+	countryCodesFromAnnotation, ok := pod.Annotations["salad.com/country-codes"]
 	if !ok {
 		return countryCodes, nil
 	}
@@ -733,9 +733,9 @@ func (p *SaladCloudProvider) getCountryCodes(pod *corev1.Pod) ([]saladclient.Cou
 }
 
 func (p *SaladCloudProvider) getNetworking(pod *corev1.Pod) (*saladclient.CreateContainerGroupNetworking, error) {
-	protocol, hasProtocol := pod.ObjectMeta.Annotations["salad.com/networking-protocol"]
-	port, hasPort := pod.ObjectMeta.Annotations["salad.com/networking-port"]
-	auth, hasAuth := pod.ObjectMeta.Annotations["salad.com/networking-auth"]
+	protocol, hasProtocol := pod.Annotations["salad.com/networking-protocol"]
+	port, hasPort := pod.Annotations["salad.com/networking-port"]
+	auth, hasAuth := pod.Annotations["salad.com/networking-auth"]
 	if !hasProtocol || !hasPort || !hasAuth {
 		return nil, nil
 	}
@@ -747,10 +747,7 @@ func (p *SaladCloudProvider) getNetworking(pod *corev1.Pod) (*saladclient.Create
 	if err != nil {
 		return nil, err
 	}
-	parsedAuth := false
-	if strings.ToLower(auth) == "true" {
-		parsedAuth = true
-	}
+	parsedAuth := strings.ToLower(auth) == "true"
 	return saladclient.NewCreateContainerGroupNetworking(*networkingProtocol, int32(parsedPortInt), parsedAuth), nil
 }
 
@@ -769,14 +766,14 @@ func (p *SaladCloudProvider) getRestartPolicy(pod *corev1.Pod) (*saladclient.Con
 }
 
 func (p *SaladCloudProvider) getContainerLogging(pod *corev1.Pod) *saladclient.ContainerLogging {
-	newRelicHost, hasRelicHost := pod.ObjectMeta.Annotations["salad.com/logging-new-relic-host"]
-	newRelicIngestionKey, hasRelicIngestionKey := pod.ObjectMeta.Annotations["salad.com/logging-new-relic-ingestion-key"]
+	newRelicHost, hasRelicHost := pod.Annotations["salad.com/logging-new-relic-host"]
+	newRelicIngestionKey, hasRelicIngestionKey := pod.Annotations["salad.com/logging-new-relic-ingestion-key"]
 
-	splunkHost, hasSplunkHost := pod.ObjectMeta.Annotations["salad.com/logging-splunk-host"]
-	splunkToken, hasSplunkToken := pod.ObjectMeta.Annotations["salad.com/logging-splunk-token"]
+	splunkHost, hasSplunkHost := pod.Annotations["salad.com/logging-splunk-host"]
+	splunkToken, hasSplunkToken := pod.Annotations["salad.com/logging-splunk-token"]
 
-	tcpHost, hasTCPHost := pod.ObjectMeta.Annotations["salad.com/logging-tcp-host"]
-	tcpPort, hasTCPPort := pod.ObjectMeta.Annotations["salad.com/logging-tcp-port"]
+	tcpHost, hasTCPHost := pod.Annotations["salad.com/logging-tcp-host"]
+	tcpPort, hasTCPPort := pod.Annotations["salad.com/logging-tcp-port"]
 
 	if !hasRelicHost && !hasRelicIngestionKey && !hasSplunkHost && !hasSplunkToken && !hasTCPHost && !hasTCPPort {
 		return nil
@@ -928,7 +925,7 @@ func (p *SaladCloudProvider) readDockerConfigJSONSecret(secret *corev1.Secret) (
 }
 
 func (p *SaladCloudProvider) getContainerPriority(pod *corev1.Pod) (*saladclient.ContainerGroupPriority, error) {
-	priority, ok := pod.ObjectMeta.Annotations["salad.com/container-group-priority"]
+	priority, ok := pod.Annotations["salad.com/container-group-priority"]
 	if !ok {
 		return nil, nil
 	}
