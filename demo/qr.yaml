@@ -13,7 +13,6 @@ spec:
   template:
     metadata:
       annotations:
-        salad.com/country-codes: us
         salad.com/networking-protocol: "http"
         salad.com/networking-port: "1234"
         salad.com/networking-auth: "false"
