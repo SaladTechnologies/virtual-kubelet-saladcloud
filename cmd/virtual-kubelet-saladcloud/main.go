@@ -79,7 +79,7 @@ func initCommandFlags() {
 	virtualKubeletCommand.Flags().StringVar(&inputs.NodeName, "nodename", inputs.NodeName, "Kubernetes node name")
 	virtualKubeletCommand.Flags().StringVar(&inputs.KubeConfig, "kube-config", inputs.KubeConfig, "Kubeconfig file")
 	virtualKubeletCommand.Flags().StringVar(&inputs.KubeConfig, "kubeconfig", inputs.KubeConfig, "Kubeconfig file")
-	virtualKubeletCommand.Flags().MarkHidden("kube-config")
+	_ = virtualKubeletCommand.Flags().MarkHidden("kube-config")
 	virtualKubeletCommand.MarkFlagsMutuallyExclusive("kube-config", "kubeconfig")
 	virtualKubeletCommand.Flags().BoolVar(&inputs.DisableTaint, "disable-taint", inputs.DisableTaint, "Disable the tainted effect")
 	virtualKubeletCommand.Flags().StringVar(&inputs.LogLevel, "log-level", inputs.LogLevel, "Log level for the node")
