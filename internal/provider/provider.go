@@ -492,6 +492,7 @@ func (p *SaladCloudProvider) getWorkloadContainerLivenessProbeFrom(
 			httpProbe.Headers = append(httpProbe.Headers,
 				saladclient.HttpHeadersInner{Name: header.Name, Value: header.Value})
 		}
+		httpProbe.SetScheme(saladclient.CONTAINERPROBEHTTPSCHEME_HTTP)
 		probe.SetHttp(*httpProbe)
 	}
 
@@ -546,6 +547,7 @@ func (p *SaladCloudProvider) getWorkloadContainerReadinessProbeFrom(
 			httpProbe.Headers = append(httpProbe.Headers,
 				saladclient.HttpHeadersInner{Name: header.Name, Value: header.Value})
 		}
+		httpProbe.SetScheme(saladclient.CONTAINERPROBEHTTPSCHEME_HTTP)
 		probe.SetHttp(*httpProbe)
 	}
 
@@ -599,6 +601,7 @@ func (p *SaladCloudProvider) getWorkloadContainerStartupProbeFrom(
 			httpProbe.Headers = append(httpProbe.Headers,
 				saladclient.HttpHeadersInner{Name: header.Name, Value: header.Value})
 		}
+		httpProbe.SetScheme(saladclient.CONTAINERPROBEHTTPSCHEME_HTTP)
 		probe.SetHttp(*httpProbe)
 	}
 
