@@ -1,7 +1,6 @@
 module github.com/SaladTechnologies/virtual-kubelet-saladcloud
 
 go 1.24.1
-
 require (
 	github.com/SaladTechnologies/salad-client v0.9.0-alpha.7
 	github.com/google/uuid v1.6.0
@@ -15,8 +14,8 @@ require (
 	github.com/stretchr/testify v1.10.0
 	github.com/virtual-kubelet/virtual-kubelet v1.11.1-0.20250117201309-5c534ffcd607
 	golang.org/x/text v0.23.0
-	k8s.io/api v0.32.2
-	k8s.io/apimachinery v0.32.2
+	k8s.io/api v0.32.3
+	k8s.io/apimachinery v0.32.3
 	k8s.io/client-go v0.32.2
 	k8s.io/kubelet v0.32.2
 )
