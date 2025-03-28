@@ -47,10 +47,16 @@ type SaladCloudProvider struct {
 }
 
 const (
-	defaultCPUCoresNumber  = "10000"
-	defaultMemorySize      = "1Ti"
-	defaultStorageSize     = "1Ti"
-	defaultPodsLimit       = "1000"
+	// Set defaults to allow ...
+	defaultPodsLimit = "1000"
+	// pods at per pod usage of...
+	// 16 vCPU
+	defaultCPUCoresNumber = "16000"
+	// 60G memory
+	defaultMemorySize = "60Ti"
+	// 50G storage
+	defaultStorageSize = "50Ti"
+
 	defaultOperatingSystem = "Linux"
 )
 
