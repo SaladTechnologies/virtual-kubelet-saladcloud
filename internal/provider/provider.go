@@ -123,7 +123,7 @@ func (p *SaladCloudProvider) CreatePod(ctx context.Context, pod *corev1.Pod) err
 		ContainerGroupsAPI.CreateContainerGroup(
 		p.contextWithAuth(),
 		p.inputVars.OrganizationName,
-		p.inputVars.ProjectName).CreateContainerGroup(
+		p.inputVars.ProjectName).ContainerGroupPrototype(
 		createContainerGroup[0],
 	).Execute()
 	if err != nil {
@@ -140,10 +140,10 @@ func (p *SaladCloudProvider) CreatePod(ctx context.Context, pod *corev1.Pod) err
 				// The exciting duplicate name condition!
 				p.logger.Errorf("Name %s has already been used in provider project %s/%s", pod.Name, p.inputVars.OrganizationName, p.inputVars.ProjectName)
 			} else {
-				p.logger.Errorf("Error type %s in `ContainerGroupsAPI.CreateContainerGroupModel`", *pd.Type)
+				p.logger.Errorf("Error type %s in `ContainerGroupsAPI.ContainerGroupPrototype`", *pd.Type)
 			}
 		} else {
-			p.logger.Errorf("Error when calling `ContainerGroupsAPI.CreateContainerGroupModel`", r)
+			p.logger.Errorf("Error when calling `ContainerGroupsAPI.ContainerGroupPrototype`", r)
 		}
 		return err
 	}
@@ -402,7 +402,7 @@ func (p *SaladCloudProvider) getContainerEnvironment(podMetadata metav1.ObjectMe
 	}
 	envMap := make(map[string]string)
 	if marshallerObjectMetadata != nil {
-		envMap["POD_METADATA_YAM"] = string(marshallerObjectMetadata)
+		envMap["POD_METADATA_YAML"] = string(marshallerObjectMetadata)
 	}
 	for _, env := range container.Env {
 		if env.ValueFrom == nil {
@@ -425,10 +425,14 @@ func (p *SaladCloudProvider) getContainerEnvironment(podMetadata metav1.ObjectMe
 }
 
 func (p *SaladCloudProvider) createContainersObject(pod *corev1.Pod) []saladclient.CreateContainer {
-	cpu, memory := utils.GetPodResource(pod.Spec)
 	createContainersArray := make([]saladclient.CreateContainer, 0)
 	for _, container := range pod.Spec.Containers {
-		containerResourceRequirement := saladclient.NewContainerResourceRequirements(int32(cpu), int32(memory))
+		cpu, memory := utils.GetPodResource(pod.Spec)
+		gpuClasses, err := p.getGPUClasses(pod)
+		if err != nil || gpuClasses == nil {
+			gpuClasses = make([]string, 0)
+		}
+		containerResourceRequirement := saladclient.NewContainerResourceRequirements(int32(cpu), int32(memory), gpuClasses)
 		createContainer := saladclient.NewCreateContainer(container.Image, *containerResourceRequirement)
 
 		createContainer.SetEnvironmentVariables(p.getContainerEnvironment(pod.ObjectMeta, container))
@@ -441,16 +445,12 @@ func (p *SaladCloudProvider) createContainersObject(pod *corev1.Pod) []saladclie
 			p.logger.Errorf("Error getting image pull secrets: %v", err)
 		} else if len(ips) > 0 {
 			// SaladCloud currently supports one registry auth per container
-			auth := saladclient.CreateContainerRegistryAuthentication{
-				Basic: saladclient.NewCreateContainerRegistryAuthenticationBasic(ips[0].Username, ips[0].Password),
+			auth := saladclient.ContainerRegistryAuthentication{
+				Basic: saladclient.NewContainerRegistryAuthenticationBasic(ips[0].Username, ips[0].Password),
 			}
 			createContainer.RegistryAuthentication = &auth
 		}
 
-		gpuClasses, err := p.getGPUClasses(pod)
-		if err == nil && gpuClasses != nil && len(gpuClasses) > 0 {
-			createContainer.Resources.SetGpuClasses(gpuClasses)
-		}
 		logging := p.getContainerLogging(pod)
 		if logging != nil {
 			createContainer.Logging = logging
@@ -484,21 +484,23 @@ func (p *SaladCloudProvider) getWorkloadContainerLivenessProbeFrom(
 
 	// Fill in gRPC details if present:
 	if k8sProbe.GRPC != nil {
-		grpcProbe := saladclient.NewContainerGroupProbeGrpc(*k8sProbe.GRPC.Service, k8sProbe.GRPC.Port)
+		grpcProbe := saladclient.NewContainerGroupProbeGrpc(k8sProbe.GRPC.Port, *k8sProbe.GRPC.Service)
 		probe.SetGrpc(*grpcProbe)
 	}
 
 	// Fill in HTTP details if present:
 	if k8sProbe.HTTPGet != nil {
+		headers := make([]saladclient.ContainerGroupProbeHttpHeader, 0)
+		for _, header := range k8sProbe.HTTPGet.HTTPHeaders {
+			headers = append(headers, saladclient.ContainerGroupProbeHttpHeader{Name: header.Name, Value: header.Value})
+		}
+		scheme := saladclient.CONTAINERPROBEHTTPSCHEME_HTTP
+		probeScheme := saladclient.NewNullableContainerProbeHttpScheme(&scheme)
 		httpProbe := saladclient.NewContainerGroupProbeHttp(
+			headers,
 			k8sProbe.HTTPGet.Path,
 			int32(k8sProbe.HTTPGet.Port.IntValue()),
-		)
-		for _, header := range k8sProbe.HTTPGet.HTTPHeaders {
-			httpProbe.Headers = append(httpProbe.Headers,
-				saladclient.HttpHeadersInner{Name: header.Name, Value: header.Value})
-		}
-		httpProbe.SetScheme(saladclient.CONTAINERPROBEHTTPSCHEME_HTTP)
+			*probeScheme)
 		probe.SetHttp(*httpProbe)
 	}
 
@@ -539,21 +541,23 @@ func (p *SaladCloudProvider) getWorkloadContainerReadinessProbeFrom(
 
 	// Optional gRPC:
 	if k8sProbe.GRPC != nil {
-		grpcProbe := saladclient.NewContainerGroupProbeGrpc(*k8sProbe.GRPC.Service, k8sProbe.GRPC.Port)
+		grpcProbe := saladclient.NewContainerGroupProbeGrpc(k8sProbe.GRPC.Port, *k8sProbe.GRPC.Service)
 		probe.SetGrpc(*grpcProbe)
 	}
 
 	// Optional HTTP:
 	if k8sProbe.HTTPGet != nil {
+		headers := make([]saladclient.ContainerGroupProbeHttpHeader, 0)
+		for _, header := range k8sProbe.HTTPGet.HTTPHeaders {
+			headers = append(headers, saladclient.ContainerGroupProbeHttpHeader{Name: header.Name, Value: header.Value})
+		}
+		scheme := saladclient.CONTAINERPROBEHTTPSCHEME_HTTP
+		probeScheme := saladclient.NewNullableContainerProbeHttpScheme(&scheme)
 		httpProbe := saladclient.NewContainerGroupProbeHttp(
+			headers,
 			k8sProbe.HTTPGet.Path,
 			int32(k8sProbe.HTTPGet.Port.IntValue()),
-		)
-		for _, header := range k8sProbe.HTTPGet.HTTPHeaders {
-			httpProbe.Headers = append(httpProbe.Headers,
-				saladclient.HttpHeadersInner{Name: header.Name, Value: header.Value})
-		}
-		httpProbe.SetScheme(saladclient.CONTAINERPROBEHTTPSCHEME_HTTP)
+			*probeScheme)
 		probe.SetHttp(*httpProbe)
 	}
 
@@ -593,21 +597,23 @@ func (p *SaladCloudProvider) getWorkloadContainerStartupProbeFrom(
 
 	// gRPC:
 	if k8sProbe.GRPC != nil {
-		grpcProbe := saladclient.NewContainerGroupProbeGrpc(*k8sProbe.GRPC.Service, k8sProbe.GRPC.Port)
+		grpcProbe := saladclient.NewContainerGroupProbeGrpc(k8sProbe.GRPC.Port, *k8sProbe.GRPC.Service)
 		probe.SetGrpc(*grpcProbe)
 	}
 
 	// HTTP:
 	if k8sProbe.HTTPGet != nil {
+		headers := make([]saladclient.ContainerGroupProbeHttpHeader, 0)
+		for _, header := range k8sProbe.HTTPGet.HTTPHeaders {
+			headers = append(headers, saladclient.ContainerGroupProbeHttpHeader{Name: header.Name, Value: header.Value})
+		}
+		scheme := saladclient.CONTAINERPROBEHTTPSCHEME_HTTP
+		probeScheme := saladclient.NewNullableContainerProbeHttpScheme(&scheme)
 		httpProbe := saladclient.NewContainerGroupProbeHttp(
+			headers,
 			k8sProbe.HTTPGet.Path,
 			int32(k8sProbe.HTTPGet.Port.IntValue()),
-		)
-		for _, header := range k8sProbe.HTTPGet.HTTPHeaders {
-			httpProbe.Headers = append(httpProbe.Headers,
-				saladclient.HttpHeadersInner{Name: header.Name, Value: header.Value})
-		}
-		httpProbe.SetScheme(saladclient.CONTAINERPROBEHTTPSCHEME_HTTP)
+			*probeScheme)
 		probe.SetHttp(*httpProbe)
 	}
 
@@ -628,15 +634,15 @@ func (p *SaladCloudProvider) getWorkloadContainerStartupProbeFrom(
 	return probe, nil
 }
 
-func (p *SaladCloudProvider) createContainerGroup(createContainerList []saladclient.CreateContainer, pod *corev1.Pod) []saladclient.CreateContainerGroup {
-	createContainerGroups := make([]saladclient.CreateContainerGroup, 0)
+func (p *SaladCloudProvider) createContainerGroup(createContainerList []saladclient.CreateContainer, pod *corev1.Pod) []saladclient.ContainerGroupPrototype {
+	createContainerGroups := make([]saladclient.ContainerGroupPrototype, 0)
 	for _, container := range createContainerList {
-		createContainerGroupRequest := *saladclient.NewCreateContainerGroup(
-			utils.GetPodName(pod.Namespace, pod.Name, pod),
-			container,
+		createContainerGroupRequest := *saladclient.NewContainerGroupPrototype(
 			true,
-			saladclient.CONTAINERRESTARTPOLICY_ALWAYS,
+			container,
+			utils.GetPodName(pod.Namespace, pod.Name, pod),
 			int32(1),
+			saladclient.CONTAINERRESTARTPOLICY_ALWAYS,
 		)
 		readinessProbe, err := p.getWorkloadContainerReadinessProbeFrom(pod.Spec.Containers[0].ReadinessProbe)
 		if err == nil && readinessProbe != nil {
@@ -749,7 +755,7 @@ func (p *SaladCloudProvider) getNetworking(pod *corev1.Pod) (*saladclient.Create
 		return nil, err
 	}
 	parsedAuth := strings.ToLower(auth) == "true"
-	return saladclient.NewCreateContainerGroupNetworking(*networkingProtocol, int32(parsedPortInt), parsedAuth), nil
+	return saladclient.NewCreateContainerGroupNetworking(parsedAuth, int32(parsedPortInt), *networkingProtocol), nil
 }
 
 func (p *SaladCloudProvider) getRestartPolicy(pod *corev1.Pod) (*saladclient.ContainerRestartPolicy, error) {
@@ -766,7 +772,7 @@ func (p *SaladCloudProvider) getRestartPolicy(pod *corev1.Pod) (*saladclient.Con
 	return saladclient.NewContainerRestartPolicyFromValue(restartPolicy)
 }
 
-func (p *SaladCloudProvider) getContainerLogging(pod *corev1.Pod) *saladclient.ContainerLogging {
+func (p *SaladCloudProvider) getContainerLogging(pod *corev1.Pod) *saladclient.CreateContainerLogging {
 	newRelicHost, hasRelicHost := pod.Annotations["salad.com/logging-new-relic-host"]
 	newRelicIngestionKey, hasRelicIngestionKey := pod.Annotations["salad.com/logging-new-relic-ingestion-key"]
 
@@ -780,7 +786,7 @@ func (p *SaladCloudProvider) getContainerLogging(pod *corev1.Pod) *saladclient.C
 		return nil
 	}
 
-	containerLogging := saladclient.NewContainerLogging()
+	containerLogging := saladclient.NewCreateContainerLogging()
 
 	if hasRelicHost && hasRelicIngestionKey {
 		newRelic := saladclient.NewContainerLoggingNewRelic(newRelicHost, newRelicIngestionKey)
