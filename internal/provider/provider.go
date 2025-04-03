@@ -475,11 +475,11 @@ func (p *SaladCloudProvider) getWorkloadContainerLivenessProbeFrom(
 
 	// Create the typed LivenessProbe:
 	probe := saladclient.NewContainerGroupLivenessProbe(
+		k8sProbe.FailureThreshold,
 		k8sProbe.InitialDelaySeconds,
 		k8sProbe.PeriodSeconds,
-		k8sProbe.TimeoutSeconds,
 		k8sProbe.SuccessThreshold,
-		k8sProbe.FailureThreshold,
+		k8sProbe.TimeoutSeconds,
 	)
 
 	// Fill in gRPC details if present:
@@ -532,11 +532,11 @@ func (p *SaladCloudProvider) getWorkloadContainerReadinessProbeFrom(
 
 	// Create the typed ReadinessProbe:
 	probe := saladclient.NewContainerGroupReadinessProbe(
+		k8sProbe.FailureThreshold,
 		k8sProbe.InitialDelaySeconds,
 		k8sProbe.PeriodSeconds,
-		k8sProbe.TimeoutSeconds,
 		k8sProbe.SuccessThreshold,
-		k8sProbe.FailureThreshold,
+		k8sProbe.TimeoutSeconds,
 	)
 
 	// Optional gRPC:
@@ -588,11 +588,11 @@ func (p *SaladCloudProvider) getWorkloadContainerStartupProbeFrom(
 
 	// Create the typed StartupProbe:
 	probe := saladclient.NewContainerGroupStartupProbe(
+		k8sProbe.FailureThreshold,
 		k8sProbe.InitialDelaySeconds,
 		k8sProbe.PeriodSeconds,
-		k8sProbe.TimeoutSeconds,
 		k8sProbe.SuccessThreshold,
-		k8sProbe.FailureThreshold,
+		k8sProbe.TimeoutSeconds,
 	)
 
 	// gRPC:
