@@ -55,14 +55,15 @@ Once the final configuration is determined SCVK can be deployed by the included 
 
 ```bash
 helm install \
-	--create-namespace --namespace sce \
+	--create-namespace \
+  --namespace saladcloud \
+	--set salad.apiKey=api-key-value-goes-here \
 	--set salad.organizationName=salad \
 	--set salad.projectName=dtdemo \
-	--set salad.apiKey=api-key-value-goes-here \
 	--set provider.image.tag=latest \
 	--set provider.nodename=sce-vk \
 	sce \
-	./charts/virtual-kubelet
+	./charts/virtual-kubelet-saladcloud-chart
 ```
 
 This will create a pod looking something like this:
@@ -127,7 +128,6 @@ spec:
   template:
     metadata:
       annotations:
-        salad.com/country-codes: us
         salad.com/networking-protocol: "http"
         salad.com/networking-port: "1234"
         salad.com/networking-auth: "false"

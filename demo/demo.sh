@@ -3,11 +3,12 @@
 
 # Typically a .env file similar to the following is used to configure the virtual kubelet
 # export LOG_LEVEL=INFO
-# export SCE_API_KEY=<api-key>
-# export SCE_ORGANIZATION_NAME=salad
-# export SCE_PROJECT_NAME=demo
+# export SALAD_API_KEY=<api-key>
+# export SALAD_ORGANIZATION_NAME=salad
+# export SALAD_PROJECT_NAME=demo
 # export NAMESPACE=saladcloud-demo
 # export NODE_NAME=${SCE_PROJECT_NAME}
+# export CHART_NAME=oci://ghcr.io/saladtechnologies/virtual-kubelet-saladcloud-chart
 
 TOP_DIR=$(cd $(dirname "$0") && pwd)
 
@@ -17,6 +18,7 @@ pushd $TOP_DIR/.. >/dev/null
 IMAGE_TAG=${IMAGE_TAG:-latest}
 NAMESPACE=${NAMESPACE:-saladcloud-demo}
 NODE_NAME=${NODE_NAME:-demo}
+CHART_NAME=${CHART_NAME:-chart/virtual-kubelet-saladcloud-chart}
 
 if [[ "$1" == "start" ]]; then
     shift
@@ -24,16 +26,17 @@ if [[ "$1" == "start" ]]; then
     helm install \
       --create-namespace \
       --namespace ${NAMESPACE} \
-      --set salad.organizationName=${SCE_ORGANIZATION_NAME} \
-      --set salad.projectName=${SCE_PROJECT_NAME} \
-      --set provider.image.tag=${IMAGE_TAG} \
-      --set provider.nodename=${NODE_NAME}-vk \
+      --set salad.organizationName=${SALAD_ORGANIZATION_NAME} \
+      --set salad.projectName=${SALAD_PROJECT_NAME} \
+      --set salad.imageTag=${IMAGE_TAG} \
+      --set salad.nodeName=${NODE_NAME}-vk \
+      --version 0.0.0 \
       ${NODE_NAME} \
-      ./charts/virtual-kubelet"
+      ${CHART_NAME}
     echo $CMD
     $CMD \
-      --set salad.apiKey=${SCE_API_KEY} \
-      --set provider.logLevel=${LOG_LEVEL}
+      --set salad.apiKey=${SALAD_API_KEY} \
+      --set salad.logLevel=${LOG_LEVEL:-info}
 
 elif [[ "$1" == "stop" ]]; then
     shift

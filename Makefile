@@ -6,6 +6,8 @@
 # clean - clean up built binaries and cached Go artifacts
 # lint - run golangci-lint (set args in LINT_ARGS)
 # tidy - "go mod tidy"
+# run - run the kubelet in the foreground with detailed logging
+# status - "kubectl get node; kubectl get pod"
 
 IMAGE_TAG ?= latest
 CMDS := bin/virtual-kubelet-saladcloud
@@ -36,7 +38,7 @@ build-image:
 
 .PHONY: clean
 clean:
-	rm $(CMDS)
+	rm -f $(CMDS)
 	go clean
 
 .PHONY: lint
@@ -55,3 +57,16 @@ bin/virtual-kubelet-saladcloud:
 bin/%: CGO_ENABLED=0
 bin/%:
 	go build -ldflags '-extldflags "-static"' -o bin/$(*) $(VERSION_FLAGS) ./cmd/$(*)
+
+run: NODE_NAME ?= demo
+run:
+	bin/virtual-kubelet-saladcloud \
+		--sce-api-key $(SALAD_API_KEY) \
+		--sce-organization-name $(SALAD_ORGANIZATION_NAME) \
+		--sce-project-name $(SALAD_PROJECT_NAME) \
+		--nodename $(NODE_NAME) \
+		--log-level TRACE
+
+status:
+	kubectl get node
+	kubectl get pod
